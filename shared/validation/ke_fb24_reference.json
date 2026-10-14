@@ -1,0 +1,31 @@
+{
+  "_note": "What actually happened, for validating Finance Bill 2024 backtest runs. Each target names its source and how firm it is. Counts from press reports are estimates; replace with ACLED event data (filter Kenya, 18-30 Jun 2024, Protests + Riots, group by admin1) when available.",
+  "bill": "Finance Bill 2024",
+  "targets": {
+    "stance_pre_amendment": {
+      "what": "Share of Kenyans opposed to the bill's new taxes, late May 2024 (before the 18 Jun amendments).",
+      "share_oppose": 0.80,
+      "date": "2024-05-29",
+      "firmness": "poll, n=1,700",
+      "src": "https://ntvkenya.co.ke/news/poll-majority-of-kenyans-opposed-to-finance-bill-2024/",
+      "detail": {"vat_bread": 0.87, "vat_financial_services_mpesa": 0.86, "motor_vehicle_tax": 0.81, "no_positive_economic_impact": 0.77,
+                 "src": "https://citizen.digital/article/infotrak-poll-shows-83-of-kenyans-oppose-finance-bill-2024-proposals-n343539"}
+    },
+    "protest_counties": {
+      "what": "Counties with anti-Finance Bill protests, by day.",
+      "by_date": {
+        "2024-06-18": {"counties": ["Nairobi"], "firmness": "press reports: first #OccupyParliament protest in Nairobi CBD; confirm with ACLED"},
+        "2024-06-20": {"counties": ["Nyeri", "Nakuru", "Kisumu", "Uasin Gishu", "Isiolo", "Kisii", "Laikipia", "Kilifi", "Garissa", "Kiambu", "Kakamega", "Nairobi", "Meru", "Kericho", "Kirinyaga", "Mombasa", "Embu", "Machakos", "Migori"],
+                       "firmness": "KNCHR monitoring statement (19 counties)",
+                       "src": "https://www.knchr.org/Articles/ArtMID/2432/ArticleID/1197/Statement-on-the-Aftermath-of-Protests-against-the-Finance-Bill-2024-carried-out-in-19-Counties-on-Thursday-20th-June-2024"},
+        "2024-06-25": {"count": 35, "of": 47, "counties": null, "firmness": "press estimate (Nation); county list needed from ACLED or KNCHR",
+                       "src": "https://monitor.co.ug/uganda/news/youth-paralyse-kenya-in-anti-tax-protests-4669928"}
+      }
+    },
+    "protest_escalation": {
+      "what": "Protests spread from Nairobi (18 Jun) to 19 counties (20 Jun) to about 35 counties (25 Jun).",
+      "order": ["2024-06-18", "2024-06-20", "2024-06-25"],
+      "firmness": "derived from the counts above"
+    }
+  }
+}

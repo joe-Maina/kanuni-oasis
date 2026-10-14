@@ -1,0 +1,42 @@
+{
+  "_note": "Finance Bill 2024 backtest: what actually happened. No clause takes effect, because the bill was withdrawn on 26 Jun 2024. Event text and dates come from events.json; protest days are scenario events agents can join. Spending effects in this scenario come only from expectations and disruption, not from enacted taxes.",
+  "scenario_id": "ke_fb24_backtest",
+  "country": "KE",
+  "bill": "Finance Bill 2024",
+  "events_file": "../events.json",
+  "levers": [],
+  "macro": {
+    "inflation_yoy": {
+      "value": 0.046,
+      "src": "knbs_inflation_jun2024"
+    },
+    "fuel_price_change_per_month": {
+      "value": 0.0,
+      "assumed": "Hold June 2024 EPRA prices for a one-month run."
+    }
+  },
+  "protest_calls": [
+    {
+      "date": "2024-06-18",
+      "text": "Activists on X and TikTok have called on young people to #OccupyParliament in Nairobi today as MPs debate the Finance Bill.",
+      "src": "Calls were public on social media and in the press; this is information people had, not the outcome."
+    },
+    {
+      "date": "2024-06-20",
+      "text": "Activists have called for protests against the Finance Bill in Nairobi and towns across the country today, the day of the second reading vote.",
+      "src": "Calls were public on social media and in the press; this is information people had, not the outcome."
+    },
+    {
+      "date": "2024-06-25",
+      "text": "Activists have called for a nationwide shutdown and protests today (#OccupyParliament, #RejectFinanceBill2024) as MPs hold the third reading vote.",
+      "src": "Calls were public on social media and in the press; this is information people had, not the outcome."
+    },
+    {
+      "date": "2024-06-27",
+      "text": "Activists have called for more protests today, demanding the President's resignation, despite the bill's withdrawal.",
+      "src": "Calls were public on social media and in the press; this is information people had, not the outcome."
+    }
+  ],
+  "_validation_note": "Agents are told only about public calls to protest, never where protests actually happened, so protest geography and size can be checked against real records without leaking them.",
+  "information_environment": "news_only"
+}

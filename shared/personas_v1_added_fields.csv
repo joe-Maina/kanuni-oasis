@@ -1,0 +1,31 @@
+id,connectivity,urban_rural,livelihood,education,trust_in_government,media_habits
+0,light_online,urban,informal casual worker,primary,low,whatsapp;radio
+1,offline,rural,smallholder farmer,primary,medium,radio
+2,heavy_online,urban,salaried worker (HR manager),tertiary,medium,x_twitter;linkedin;whatsapp;tv
+3,heavy_online,urban,gig worker,secondary,low,x_twitter;tiktok;whatsapp
+4,offline,rural,pastoralist,none,low,radio
+5,light_online,urban,informal trader (jua kali),secondary,medium,whatsapp;facebook;radio
+6,offline,rural,smallholder farmer (cash transfer recipient),primary,medium,radio
+7,light_online,urban,faith leader,tertiary,high,whatsapp;facebook;tv
+8,heavy_online,urban,county civil servant,tertiary,medium,x_twitter;whatsapp;tv
+9,heavy_online,urban,tech entrepreneur,tertiary,low,x_twitter;linkedin;whatsapp
+10,heavy_online,urban,politician (governor),tertiary,high,x_twitter;tv
+11,heavy_online,urban,politician (senator),tertiary,medium,x_twitter;tv
+12,light_online,rural,national civil servant,tertiary,high,whatsapp;tv
+13,light_online,urban,police officer,tertiary,high,whatsapp;tv
+14,light_online,rural,national civil servant,tertiary,high,whatsapp;radio
+15,heavy_online,urban,county civil servant (health),tertiary,medium,x_twitter;whatsapp
+16,light_online,urban,county civil servant,tertiary,low,whatsapp;radio
+17,heavy_online,urban,politician (women representative),tertiary,high,x_twitter;facebook;tv
+18,heavy_online,urban,NGO worker,tertiary,low,x_twitter;whatsapp
+19,light_online,rural,community paralegal,secondary,low,whatsapp;radio
+20,heavy_online,urban,corporate executive,tertiary,medium,x_twitter;linkedin
+21,light_online,rural,salaried worker (teacher),tertiary,low,whatsapp;facebook;radio
+22,heavy_online,rural,politician (MP),tertiary,high,x_twitter;tv
+23,heavy_online,urban,politician (MP),tertiary,high,x_twitter;tiktok;tv
+24,light_online,urban,county civil servant,tertiary,medium,whatsapp;facebook
+25,light_online,rural,politician (MCA),secondary,medium,whatsapp;facebook;radio
+26,heavy_online,urban,business executive,tertiary,medium,x_twitter;linkedin
+27,offline,urban,primary school pupil,primary,unknown,tv
+28,light_online,urban,secondary school student,secondary,low,whatsapp;tiktok
+29,heavy_online,urban,university student,tertiary,low,x_twitter;tiktok;whatsapp

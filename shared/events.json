@@ -1,0 +1,65 @@
+{
+  "_note": "Kenya Finance Bill 2024 backtest timeline. Framework-neutral: both simulators read this file unchanged. Agents may only see events with date <= the current simulated day. Media account names are fictional; do not use real outlet names. Dates checked against press coverage on 2026-10-11; see sources.",
+  "media_accounts": [
+    {"account_id": "ke_news_desk", "name": "Kenya News Desk", "bio": "General news coverage across Kenya."},
+    {"account_id": "ke_business_desk", "name": "KE Business Desk", "bio": "Business, tax and economy reporting."},
+    {"account_id": "ke_parliament_watch", "name": "Parliament Watch KE", "bio": "Daily reporting on the National Assembly."}
+  ],
+  "events": [
+    {
+      "event_id": "fb24_published",
+      "date": "2024-05-09",
+      "type": "policy",
+      "source_account": "ke_business_desk",
+      "text": "[9 May 2024] The Finance Bill 2024 has been published. Proposals include 16% VAT on bread, an annual motor vehicle tax of 2.5% of a vehicle's value, an eco levy on goods including locally made diapers and sanitary pads, VAT on some financial services and foreign exchange transactions, and higher excise duty on mobile money transfer fees. The Treasury says the measures are needed to raise revenue and reduce borrowing.",
+      "clauses": ["vat_bread", "motor_vehicle_tax", "eco_levy", "vat_financial_services", "excise_mobile_money"]
+    },
+    {
+      "event_id": "fb24_amendments",
+      "date": "2024-06-18",
+      "type": "policy",
+      "source_account": "ke_parliament_watch",
+      "text": "[18 June 2024] After a ruling-coalition meeting at State House, the Finance Committee chair announced that several proposals are being dropped from the Finance Bill 2024: VAT on bread, the motor vehicle tax, VAT on financial services and foreign exchange, and VAT on transporting sugarcane. The eco levy will now apply only to imported finished goods. Other tax measures in the bill remain.",
+      "clauses": ["vat_bread", "motor_vehicle_tax", "eco_levy", "vat_financial_services"]
+    },
+    {
+      "event_id": "fb24_protest_18jun",
+      "date": "2024-06-18",
+      "type": "protest",
+      "source_account": "ke_news_desk",
+      "text": "[18 June 2024] Protesters, many of them young people organising online under #OccupyParliament, gathered in Nairobi's central business district near Parliament to oppose the Finance Bill 2024. Police dispersed crowds and several people were arrested.",
+      "clauses": []
+    },
+    {
+      "event_id": "fb24_second_reading",
+      "date": "2024-06-20",
+      "type": "parliament",
+      "source_account": "ke_parliament_watch",
+      "text": "[20 June 2024] The National Assembly passed the Finance Bill 2024 at second reading by 204 votes to 115. Protests against the bill took place in Nairobi and several other towns the same day.",
+      "clauses": []
+    },
+    {
+      "event_id": "fb24_third_reading",
+      "date": "2024-06-25",
+      "type": "parliament",
+      "source_account": "ke_parliament_watch",
+      "text": "[25 June 2024] The National Assembly passed the Finance Bill 2024 at third reading. Protesters later broke into the Parliament buildings in Nairobi. Police opened fire and several people were reported killed. Protests took place in many counties.",
+      "clauses": []
+    },
+    {
+      "event_id": "fb24_withdrawn",
+      "date": "2024-06-26",
+      "type": "executive",
+      "source_account": "ke_news_desk",
+      "text": "[26 June 2024] President William Ruto announced that he will not sign the Finance Bill 2024 and that it is withdrawn, saying the people had spoken. He called for dialogue with young people.",
+      "clauses": []
+    }
+  ],
+  "sources": [
+    "https://www.afriwise.com/blog/finance-bill-2024-withdrawn",
+    "https://citizen.digital/news/major-win-for-kenyans-as-govt-removes-controversial-tax-proposals-in-finance-bill-2024-n344195",
+    "https://standardmedia.co.ke/article/2001497398/finance-bill-2024-major-tax-proposals-dropped",
+    "https://techcabal.com/2024/06/20/kenyan-2024-finance-bill-passes-second-reading/",
+    "https://en.wikipedia.org/wiki/Kenya_Finance_Bill_2024"
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "_note": "Counterfactual: Finance Bill 2024 passed as amended on 18 Jun 2024 and was signed. Not a backtest: results are 'what if' and must be labelled that way. Lever effective dates are assumed (Finance Acts usually take effect on 1 July).",
+  "scenario_id": "ke_fb24_passed",
+  "country": "KE",
+  "bill": "Finance Bill 2024",
+  "events_file": "../events.json",
+  "drop_events": [
+    "fb24_withdrawn"
+  ],
+  "levers": [
+    {
+      "clause": "excise_mobile_money",
+      "effective": "2024-07-01",
+      "applies_to": "mobile_money_fees",
+      "multiplier": 1.0435,
+      "assumed": "Excise on transfer fees 15% -> 20%: fee incl. excise rises by 1.20/1.15. Applied to an assumed mobile-money fee share of spending."
+    },
+    {
+      "clause": "eco_levy",
+      "effective": "2024-07-01",
+      "applies_to": "household_goods",
+      "multiplier": 1.02,
+      "assumed": "Amended to imported finished goods only; small average effect assumed."
+    }
+  ],
+  "macro": {
+    "inflation_yoy": {
+      "value": 0.046,
+      "src": "knbs_inflation_jun2024"
+    },
+    "fuel_price_change_per_month": {
+      "value": 0.0,
+      "assumed": "Hold June 2024 EPRA prices."
+    }
+  },
+  "protest_calls": [
+    {
+      "date": "2024-06-18",
+      "text": "Activists on X and TikTok have called on young people to #OccupyParliament in Nairobi today as MPs debate the Finance Bill.",
+      "src": "Calls were public on social media and in the press; this is information people had, not the outcome."
+    },
+    {
+      "date": "2024-06-20",
+      "text": "Activists have called for protests against the Finance Bill in Nairobi and towns across the country today, the day of the second reading vote.",
+      "src": "Calls were public on social media and in the press; this is information people had, not the outcome."
+    },
+    {
+      "date": "2024-06-25",
+      "text": "Activists have called for a nationwide shutdown and protests today (#OccupyParliament, #RejectFinanceBill2024) as MPs hold the third reading vote.",
+      "src": "Calls were public on social media and in the press; this is information people had, not the outcome."
+    }
+  ],
+  "_validation_note": "Agents are told only about public calls to protest, never where protests actually happened, so protest geography and size can be checked against real records without leaking them."
+}

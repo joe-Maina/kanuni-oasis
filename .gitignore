@@ -1,0 +1,18 @@
+# Only our code is tracked. OASIS and AgentSociety 2 source are fetched at
+# pinned commits by setup.sh into the same folders and stay untracked.
+/camel-oasis/*
+!/camel-oasis/oasis/
+/camel-oasis/oasis/*
+!/camel-oasis/oasis/kanuni/
+!/camel-oasis/oasis/personas/
+/agentic-society/*
+!/agentic-society/kanuni_as2/
+
+# Secrets, environments, outputs
+.env
+.venv/
+runs/
+__pycache__/
+*.pyc
+.DS_Store
+.idea/

@@ -1,0 +1,78 @@
+{
+  "_note": "Counterfactual: Finance Bill 2024 enacted as first published on 9 May 2024 (before the 18 Jun amendments). 'What if' scenario; label results that way. Lever sizes are assumed placeholders until checked against the bill text.",
+  "scenario_id": "ke_fb24_as_published",
+  "country": "KE",
+  "bill": "Finance Bill 2024",
+  "events_file": "../events.json",
+  "drop_events": [
+    "fb24_amendments",
+    "fb24_withdrawn"
+  ],
+  "levers": [
+    {
+      "clause": "vat_bread",
+      "effective": "2024-07-01",
+      "applies_to": "bread",
+      "multiplier": 1.16,
+      "src": "mwananchi_amendments"
+    },
+    {
+      "clause": "excise_mobile_money",
+      "effective": "2024-07-01",
+      "applies_to": "mobile_money_fees",
+      "multiplier": 1.0435,
+      "assumed": "15% -> 20% excise on fees."
+    },
+    {
+      "clause": "eco_levy",
+      "effective": "2024-07-01",
+      "applies_to": "household_goods",
+      "multiplier": 1.05,
+      "assumed": "Covers sanitary pads, diapers, packaging, phones; placeholder average."
+    },
+    {
+      "clause": "motor_vehicle_tax",
+      "effective": "2024-07-01",
+      "applies_to": "car_owners",
+      "annual_rate": 0.025,
+      "min": 5000,
+      "max": 100000,
+      "src": "mwananchi_amendments"
+    },
+    {
+      "clause": "vat_financial_services",
+      "effective": "2024-07-01",
+      "applies_to": "bank_and_card_fees",
+      "multiplier": 1.16,
+      "assumed": "Scope to be checked against the bill."
+    }
+  ],
+  "macro": {
+    "inflation_yoy": {
+      "value": 0.046,
+      "src": "knbs_inflation_jun2024"
+    },
+    "fuel_price_change_per_month": {
+      "value": 0.0,
+      "assumed": "Hold June 2024 EPRA prices."
+    }
+  },
+  "protest_calls": [
+    {
+      "date": "2024-06-18",
+      "text": "Activists on X and TikTok have called on young people to #OccupyParliament in Nairobi today as MPs debate the Finance Bill.",
+      "src": "Calls were public on social media and in the press; this is information people had, not the outcome."
+    },
+    {
+      "date": "2024-06-20",
+      "text": "Activists have called for protests against the Finance Bill in Nairobi and towns across the country today, the day of the second reading vote.",
+      "src": "Calls were public on social media and in the press; this is information people had, not the outcome."
+    },
+    {
+      "date": "2024-06-25",
+      "text": "Activists have called for a nationwide shutdown and protests today (#OccupyParliament, #RejectFinanceBill2024) as MPs hold the third reading vote.",
+      "src": "Calls were public on social media and in the press; this is information people had, not the outcome."
+    }
+  ],
+  "_validation_note": "Agents are told only about public calls to protest, never where protests actually happened, so protest geography and size can be checked against real records without leaking them."
+}

@@ -1,0 +1,43 @@
+{
+  "run_id": "as2_tiny_5_seed0",
+  "seed": 0,
+  "condition": "b",
+  "scenario": "../../../shared/scenarios/ke_fb24_backtest.json",
+  "bill_name": "Finance Bill 2024",
+  "personas": "../../../shared/personas.json",
+  "profiles": "../../../shared/countries/ke/livelihood_profiles.json",
+  "channels": "../../../shared/countries/ke/channels.json",
+  "model": {
+    "name": "qwen3.5:27b",
+    "url": "http://127.0.0.1:8765/v1",
+    "request_timeout_s": 600
+  },
+  "model_cutoff": "after 2024-06 (knows the outcome; smoke test only, not reportable)",
+  "agent_ids": [
+    0,
+    1,
+    5,
+    12,
+    27
+  ],
+  "schedule": [
+    {
+      "from": "2024-06-17",
+      "to": "2024-06-18",
+      "step_days": 1
+    }
+  ],
+  "agent_config": {
+    "max_react_turns": 8,
+    "enable_todo_list": false,
+    "disabled_skill_ids": [
+      "built-in@daily-guidance",
+      "daily-guidance"
+    ]
+  },
+  "router": {
+    "max_steps": 4
+  },
+  "max_concurrency": 4,
+  "_agent_config_note": "AS2's built-in daily-guidance skill (hour-by-hour day plans written to files) is disabled: our steps are days or weeks, and it used up the agents' turns."
+}

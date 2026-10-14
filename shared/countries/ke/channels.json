@@ -1,0 +1,33 @@
+{
+  "_note": "DRAFT. How Kenyans hear about a policy, offline and online. A persona's channels are its media_habits plus the offline channels its rules grant. Each channel has a reach probability per event-day: the chance that an event published that day reaches a persona who uses the channel. All values are assumed until checked against audience data (e.g. Media Council of Kenya / GeoPoll audience surveys, Afrobarometer media-use items).",
+  "channels": {
+    "radio": {"label": "radio (e.g. Radio Citizen, Ramogi, Inooro, Kameme)", "reach": 0.8, "kind": "broadcast"},
+    "tv": {"label": "TV news (e.g. Citizen TV, NTV, KTN)", "reach": 0.8, "kind": "broadcast"},
+    "whatsapp": {"label": "WhatsApp family and community groups", "reach": 0.5, "kind": "peer"},
+    "x_twitter": {"label": "X (Twitter)", "reach": 0.7, "kind": "social"},
+    "tiktok": {"label": "TikTok", "reach": 0.6, "kind": "social"},
+    "facebook": {"label": "Facebook", "reach": 0.5, "kind": "social"},
+    "instagram": {"label": "Instagram", "reach": 0.4, "kind": "social"},
+    "youtube": {"label": "YouTube", "reach": 0.4, "kind": "social"},
+    "linkedin": {"label": "LinkedIn", "reach": 0.2, "kind": "social"},
+    "church_mosque": {"label": "church or mosque announcements and talk", "reach": 0.6, "kind": "offline", "days": ["Fri", "Sun"]},
+    "market_matatu": {"label": "talk at the market, stage or in matatus", "reach": 0.5, "kind": "offline"},
+    "workplace": {"label": "talk at work", "reach": 0.4, "kind": "offline"},
+    "chief_baraza": {"label": "chief's baraza or local meeting", "reach": 0.2, "kind": "offline"}
+  },
+  "offline_rules": [
+    {"grant": "radio", "if": {"urban_rural": "rural"}, "assumed": "Radio is the most-used news source in rural Kenya."},
+    {"grant": "radio", "if": {"connectivity": ["offline", "light_online"]}, "assumed": "Offline households rely on radio."},
+    {"grant": "church_mosque", "if": {}, "assumed": "Most Kenyans attend weekly religious services; refine with religion data when personas carry it."},
+    {"grant": "market_matatu", "if": {"profile_id": ["informal_trader", "boda_rider", "matatu_crew", "casual_labourer", "small_business"]}, "assumed": "Work happens where people talk about the news."},
+    {"grant": "workplace", "if": {"profile_id": ["formal_employee", "professional_high", "political_office"]}, "assumed": "Formal workplaces."},
+    {"grant": "chief_baraza", "if": {"urban_rural": "rural"}, "assumed": "Barazas are mainly rural."}
+  ],
+  "word_of_mouth": {
+    "_note": "Each persona has ties drawn by code from the persona file: neighbours (same county), workmates (same livelihood profile and county), family (random, any county). Messages told to a tie arrive the next step.",
+    "neighbours_per_agent": 4,
+    "workmates_per_agent": 3,
+    "family_per_agent": 3,
+    "assumed": "Tie counts are placeholders."
+  }
+}

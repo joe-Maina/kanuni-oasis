@@ -1,0 +1,1168 @@
+{
+  "_note": "DRAFT for review. Kenya household economics by livelihood, mid-2024 (KES, nominal). Used by the AgentSociety household module: code does the bookkeeping, the LLM only makes decisions. Every figure carries 'src' (a key in 'sources') or 'assumed' with a reason. Assumed figures must be checked or replaced with Qhala/KNBS data before reportable runs. Ranges are [low, high]; a persona is placed in the range by its income_band (very_low -> low end, high -> high end).",
+  "country": "KE",
+  "currency": "KES",
+  "price_date": "2024-06",
+  "calendar": {
+    "rent_due_day": {
+      "value": 5,
+      "assumed": "Common practice: rent due 1st-5th of the month."
+    },
+    "salary_day": {
+      "value": 25,
+      "assumed": "Government and most formal employers pay in the last week of the month."
+    },
+    "school_terms_2024": {
+      "value": [
+        [
+          "2024-01-08",
+          "2024-03-22"
+        ],
+        [
+          "2024-04-29",
+          "2024-08-02"
+        ],
+        [
+          "2024-08-26",
+          "2024-10-25"
+        ]
+      ],
+      "assumed": "Approximate MoE 2024 calendar; verify against the gazetted calendar. Fees due at the start of each term."
+    },
+    "long_rains_harvest": {
+      "value": [
+        "07",
+        "09"
+      ],
+      "assumed": "Main maize harvest Jul-Sep in high-potential areas; varies by county."
+    },
+    "short_rains_harvest": {
+      "value": [
+        "01",
+        "02"
+      ],
+      "assumed": "Varies by county."
+    }
+  },
+  "prices": {
+    "petrol_litre": {
+      "value": 189.84,
+      "src": "epra_jun2024"
+    },
+    "diesel_litre": {
+      "value": 173.1,
+      "src": "epra_jun2024"
+    },
+    "kerosene_litre": {
+      "value": 163.05,
+      "src": "epra_jun2024"
+    },
+    "bread_400g": {
+      "value": 65,
+      "assumed": "Typical shelf price mid-2024; verify against KNBS average retail prices June 2024."
+    },
+    "maize_flour_2kg": {
+      "value": 160,
+      "assumed": "KNBS reported a ~2% fall in June 2024 but the level was not in the sources found; verify against the KNBS June 2024 CPI release."
+    },
+    "sugar_1kg": {
+      "value": 180,
+      "assumed": "Verify against KNBS June 2024 CPI release."
+    },
+    "cooking_oil_1l": {
+      "value": 300,
+      "assumed": "Verify against KNBS June 2024 CPI release."
+    }
+  },
+  "statutory_deductions_2024": {
+    "housing_levy_rate": {
+      "value": 0.015,
+      "assumed": "Affordable Housing Act 2024, in force March 2024; verify."
+    },
+    "health_contribution": {
+      "value": "NHIF flat scale until SHIF (2.75% of gross) from Oct 2024",
+      "assumed": "Verify dates and rates."
+    },
+    "nssf": {
+      "value": "Tier I and II at 6% employee share, capped",
+      "assumed": "NSSF Act rates from Feb 2024; verify caps."
+    },
+    "paye": {
+      "value": "Standard bands 10%-35%",
+      "assumed": "Apply only to formal employees."
+    }
+  },
+  "profiles": [
+    {
+      "profile_id": "boda_rider",
+      "label": "Boda boda rider",
+      "livelihoods": [
+        "boda boda rider"
+      ],
+      "income": {
+        "pattern": "daily",
+        "gross_per_working_day": {
+          "value": [
+            700,
+            1500
+          ],
+          "src": "viffa_boda_2025",
+          "note": "Survey average ~KES 1,100/day for riders owning via asset finance (2025 report, lender-funded; treat as indicative)."
+        },
+        "working_days_per_week": {
+          "value": 6,
+          "assumed": "Typical; Sunday off or half-day."
+        },
+        "variability": {
+          "value": 0.3,
+          "assumed": "Day-to-day earnings vary about +/-30% (weather, demand, police crackdowns)."
+        }
+      },
+      "obligations": [
+        {
+          "name": "fuel",
+          "amount": {
+            "value": [
+              250,
+              400
+            ],
+            "assumed": "~1.5-2 L/day at KES 189.84/L. A Kenya News Agency piece cites ~KES 300 of petrol per 70-90 km, but the page could not be re-checked."
+          },
+          "frequency": "working_day"
+        },
+        {
+          "name": "bike_payment",
+          "amount": {
+            "value": [
+              300,
+              300
+            ],
+            "src": "viffa_boda_2025",
+            "note": "Renters pay up to KES 300/day to the owner; asset-financed riders pay a loan instalment of similar size."
+          },
+          "frequency": "working_day",
+          "applies_if": "does not own bike outright (assumed 70% of riders)"
+        },
+        {
+          "name": "maintenance",
+          "amount": {
+            "value": [
+              1000,
+              3000
+            ],
+            "assumed": "Reported by Kenya News Agency (not re-checked)."
+          },
+          "frequency": "monthly"
+        },
+        {
+          "name": "rent",
+          "amount": {
+            "value": [
+              2500,
+              6000
+            ],
+            "assumed": "Single room; rural low end, urban high end."
+          },
+          "frequency": "monthly",
+          "due": "rent_due_day"
+        },
+        {
+          "name": "food",
+          "amount": {
+            "value": [
+              300,
+              600
+            ],
+            "assumed": "Household daily food, 3-5 people."
+          },
+          "frequency": "daily"
+        },
+        {
+          "name": "school_fees",
+          "amount": {
+            "value": [
+              3000,
+              15000
+            ],
+            "assumed": "Per term, day secondary or private primary; 0 if no school-age children."
+          },
+          "frequency": "term"
+        },
+        {
+          "name": "chama",
+          "amount": {
+            "value": [
+              200,
+              1000
+            ],
+            "assumed": "Weekly group savings contribution."
+          },
+          "frequency": "weekly"
+        }
+      ],
+      "buffers": {
+        "savings_days": {
+          "value": [
+            0,
+            7
+          ],
+          "assumed": "Most riders hold under a week of expenses."
+        },
+        "credit": [
+          "M-Shwari/Fuliza",
+          "chama",
+          "family"
+        ]
+      },
+      "policy_exposure": [
+        "vat_bread",
+        "excise_mobile_money",
+        "fuel_prices"
+      ],
+      "cost_of_one_day_off": "lost gross earnings minus fuel; bike payment still due if renting"
+    },
+    {
+      "profile_id": "matatu_crew",
+      "label": "Matatu driver or conductor",
+      "livelihoods": [
+        "matatu driver"
+      ],
+      "income": {
+        "pattern": "daily",
+        "gross_per_working_day": {
+          "value": [
+            800,
+            1500
+          ],
+          "assumed": "Crew keep what is left after the owner's daily target; verify."
+        },
+        "working_days_per_week": {
+          "value": 6,
+          "assumed": "Typical."
+        },
+        "variability": {
+          "value": 0.3,
+          "assumed": "Target system pushes variance onto the crew."
+        }
+      },
+      "obligations": [
+        {
+          "name": "rent",
+          "amount": {
+            "value": [
+              3000,
+              8000
+            ],
+            "assumed": "Urban single room or bedsitter."
+          },
+          "frequency": "monthly",
+          "due": "rent_due_day"
+        },
+        {
+          "name": "food",
+          "amount": {
+            "value": [
+              300,
+              600
+            ],
+            "assumed": "Household daily food."
+          },
+          "frequency": "daily"
+        },
+        {
+          "name": "school_fees",
+          "amount": {
+            "value": [
+              3000,
+              15000
+            ],
+            "assumed": "Per term."
+          },
+          "frequency": "term"
+        },
+        {
+          "name": "chama",
+          "amount": {
+            "value": [
+              200,
+              1000
+            ],
+            "assumed": "Weekly."
+          },
+          "frequency": "weekly"
+        }
+      ],
+      "buffers": {
+        "savings_days": {
+          "value": [
+            0,
+            7
+          ],
+          "assumed": "Low."
+        },
+        "credit": [
+          "Fuliza",
+          "SACCO",
+          "chama"
+        ]
+      },
+      "policy_exposure": [
+        "vat_bread",
+        "excise_mobile_money",
+        "fuel_prices",
+        "motor_vehicle_tax_passed_on_by_owner"
+      ],
+      "cost_of_one_day_off": "lost earnings; route may be disrupted by protests anyway"
+    },
+    {
+      "profile_id": "informal_trader",
+      "label": "Mama mboga, market or jua kali trader",
+      "livelihoods": [
+        "informal trader",
+        "mama mboga (vegetable vendor)",
+        "informal trader (jua kali)"
+      ],
+      "income": {
+        "pattern": "daily",
+        "net_per_working_day": {
+          "value": [
+            300,
+            1000
+          ],
+          "assumed": "Net margin after restocking stock; verify."
+        },
+        "working_days_per_week": {
+          "value": 6,
+          "assumed": "Typical."
+        },
+        "variability": {
+          "value": 0.35,
+          "assumed": "Depends on customers' own incomes; falls when prices rise."
+        }
+      },
+      "obligations": [
+        {
+          "name": "county_market_fee",
+          "amount": {
+            "value": [
+              30,
+              100
+            ],
+            "assumed": "Daily cess or stall fee."
+          },
+          "frequency": "working_day"
+        },
+        {
+          "name": "rent",
+          "amount": {
+            "value": [
+              2000,
+              6000
+            ],
+            "assumed": "Single room."
+          },
+          "frequency": "monthly",
+          "due": "rent_due_day"
+        },
+        {
+          "name": "food",
+          "amount": {
+            "value": [
+              250,
+              500
+            ],
+            "assumed": "Household daily food."
+          },
+          "frequency": "daily"
+        },
+        {
+          "name": "school_fees",
+          "amount": {
+            "value": [
+              3000,
+              15000
+            ],
+            "assumed": "Per term."
+          },
+          "frequency": "term"
+        },
+        {
+          "name": "chama",
+          "amount": {
+            "value": [
+              100,
+              700
+            ],
+            "assumed": "Weekly; often a merry-go-round."
+          },
+          "frequency": "weekly"
+        }
+      ],
+      "buffers": {
+        "savings_days": {
+          "value": [
+            0,
+            5
+          ],
+          "assumed": "Very low; stock is the main asset."
+        },
+        "credit": [
+          "chama",
+          "shylock",
+          "Fuliza",
+          "supplier credit"
+        ]
+      },
+      "policy_exposure": [
+        "vat_bread",
+        "excise_mobile_money",
+        "demand_drop_from_customers"
+      ],
+      "cost_of_one_day_off": "lost sales and possible spoilage of perishable stock"
+    },
+    {
+      "profile_id": "small_business",
+      "label": "Small business owner (shop, salon, kiosk)",
+      "livelihoods": [
+        "small business owner"
+      ],
+      "income": {
+        "pattern": "daily",
+        "net_per_month": {
+          "value": [
+            20000,
+            80000
+          ],
+          "assumed": "Wide range; verify with MSME survey data."
+        },
+        "variability": {
+          "value": 0.25,
+          "assumed": "Tracks local demand."
+        }
+      },
+      "obligations": [
+        {
+          "name": "shop_rent",
+          "amount": {
+            "value": [
+              5000,
+              25000
+            ],
+            "assumed": "Monthly."
+          },
+          "frequency": "monthly",
+          "due": "rent_due_day"
+        },
+        {
+          "name": "house_rent",
+          "amount": {
+            "value": [
+              5000,
+              20000
+            ],
+            "assumed": "Monthly."
+          },
+          "frequency": "monthly",
+          "due": "rent_due_day"
+        },
+        {
+          "name": "single_business_permit",
+          "amount": {
+            "value": [
+              5000,
+              15000
+            ],
+            "assumed": "County, yearly."
+          },
+          "frequency": "yearly"
+        },
+        {
+          "name": "food",
+          "amount": {
+            "value": [
+              500,
+              1000
+            ],
+            "assumed": "Household daily food."
+          },
+          "frequency": "daily"
+        },
+        {
+          "name": "school_fees",
+          "amount": {
+            "value": [
+              10000,
+              40000
+            ],
+            "assumed": "Per term."
+          },
+          "frequency": "term"
+        },
+        {
+          "name": "loan_repayment",
+          "amount": {
+            "value": [
+              2000,
+              10000
+            ],
+            "assumed": "Monthly SACCO or bank loan; 0 if none."
+          },
+          "frequency": "monthly"
+        }
+      ],
+      "buffers": {
+        "savings_days": {
+          "value": [
+            7,
+            45
+          ],
+          "assumed": "Some stock and M-Pesa float."
+        },
+        "credit": [
+          "SACCO",
+          "bank",
+          "chama"
+        ]
+      },
+      "policy_exposure": [
+        "vat_bread",
+        "excise_mobile_money",
+        "eco_levy",
+        "vat_financial_services",
+        "demand_drop_from_customers"
+      ],
+      "cost_of_one_day_off": "lost sales; risk of looting during protests"
+    },
+    {
+      "profile_id": "casual_labourer",
+      "label": "Casual labourer or gig worker",
+      "livelihoods": [
+        "casual labourer",
+        "informal casual worker",
+        "gig worker"
+      ],
+      "income": {
+        "pattern": "daily",
+        "gross_per_working_day": {
+          "value": [
+            400,
+            800
+          ],
+          "assumed": "Construction or farm casual day rate; verify."
+        },
+        "working_days_per_week": {
+          "value": [
+            2,
+            5
+          ],
+          "assumed": "Work is not available every day."
+        },
+        "variability": {
+          "value": 0.5,
+          "assumed": "Highly irregular."
+        }
+      },
+      "obligations": [
+        {
+          "name": "rent",
+          "amount": {
+            "value": [
+              1500,
+              4000
+            ],
+            "assumed": "Single room, often informal settlement."
+          },
+          "frequency": "monthly",
+          "due": "rent_due_day"
+        },
+        {
+          "name": "food",
+          "amount": {
+            "value": [
+              200,
+              400
+            ],
+            "assumed": "Household daily food."
+          },
+          "frequency": "daily"
+        },
+        {
+          "name": "transport",
+          "amount": {
+            "value": [
+              100,
+              200
+            ],
+            "assumed": "Matatu fare to work sites."
+          },
+          "frequency": "working_day"
+        },
+        {
+          "name": "school_fees",
+          "amount": {
+            "value": [
+              0,
+              6000
+            ],
+            "assumed": "Per term."
+          },
+          "frequency": "term"
+        }
+      ],
+      "buffers": {
+        "savings_days": {
+          "value": [
+            0,
+            3
+          ],
+          "assumed": "Lives day to day."
+        },
+        "credit": [
+          "Fuliza",
+          "shylock",
+          "family",
+          "shopkeeper credit"
+        ]
+      },
+      "policy_exposure": [
+        "vat_bread",
+        "excise_mobile_money",
+        "fuel_prices_via_fares"
+      ],
+      "cost_of_one_day_off": "lost day rate if work was available"
+    },
+    {
+      "profile_id": "smallholder_farmer",
+      "label": "Smallholder farmer or pastoralist",
+      "livelihoods": [
+        "smallholder farmer",
+        "smallholder farmer (cash transfer recipient)",
+        "pastoralist"
+      ],
+      "income": {
+        "pattern": "seasonal",
+        "harvest_income_per_season": {
+          "value": [
+            15000,
+            80000
+          ],
+          "assumed": "Maize/beans/tea/milk sales; verify by county."
+        },
+        "small_regular_sales_per_week": {
+          "value": [
+            300,
+            1500
+          ],
+          "assumed": "Milk, eggs, vegetables."
+        },
+        "cash_transfer_per_month": {
+          "value": 2000,
+          "assumed": "Inua Jamii, only for cash-transfer recipients; paid every 1-2 months in arrears."
+        }
+      },
+      "obligations": [
+        {
+          "name": "food_purchases",
+          "amount": {
+            "value": [
+              100,
+              300
+            ],
+            "assumed": "Daily; lower than urban because of own production."
+          },
+          "frequency": "daily"
+        },
+        {
+          "name": "farm_inputs",
+          "amount": {
+            "value": [
+              5000,
+              20000
+            ],
+            "assumed": "Fertiliser and seed at planting (Mar and Oct)."
+          },
+          "frequency": "season"
+        },
+        {
+          "name": "school_fees",
+          "amount": {
+            "value": [
+              3000,
+              20000
+            ],
+            "assumed": "Per term."
+          },
+          "frequency": "term"
+        },
+        {
+          "name": "church_or_harambee",
+          "amount": {
+            "value": [
+              100,
+              500
+            ],
+            "assumed": "Weekly giving."
+          },
+          "frequency": "weekly"
+        }
+      ],
+      "buffers": {
+        "savings_days": {
+          "value": [
+            3,
+            30
+          ],
+          "assumed": "Stored grain and livestock act as savings."
+        },
+        "credit": [
+          "chama",
+          "SACCO",
+          "selling livestock"
+        ]
+      },
+      "policy_exposure": [
+        "vat_bread",
+        "excise_mobile_money",
+        "eco_levy_on_inputs"
+      ],
+      "cost_of_one_day_off": "low in off-season; travel to town to protest costs fare"
+    },
+    {
+      "profile_id": "formal_employee",
+      "label": "Salaried or public servant (teacher, nurse, county officer, police, NGO)",
+      "livelihoods": [
+        "salaried worker",
+        "salaried worker (teacher)",
+        "county civil servant",
+        "county civil servant (health)",
+        "national civil servant",
+        "police officer",
+        "NGO worker",
+        "community paralegal",
+        "faith leader"
+      ],
+      "income": {
+        "pattern": "monthly",
+        "gross_per_month": {
+          "value": [
+            30000,
+            120000
+          ],
+          "assumed": "Mid-level public and private salaries; verify with SRC and KNBS Economic Survey 2024 wage tables."
+        },
+        "deductions": [
+          "paye",
+          "housing_levy_rate",
+          "health_contribution",
+          "nssf"
+        ],
+        "pay_day": "salary_day"
+      },
+      "obligations": [
+        {
+          "name": "rent",
+          "amount": {
+            "value": [
+              8000,
+              30000
+            ],
+            "assumed": "One- or two-bedroom."
+          },
+          "frequency": "monthly",
+          "due": "rent_due_day"
+        },
+        {
+          "name": "food",
+          "amount": {
+            "value": [
+              500,
+              1200
+            ],
+            "assumed": "Household daily food."
+          },
+          "frequency": "daily"
+        },
+        {
+          "name": "transport",
+          "amount": {
+            "value": [
+              200,
+              600
+            ],
+            "assumed": "Daily commute."
+          },
+          "frequency": "working_day"
+        },
+        {
+          "name": "school_fees",
+          "amount": {
+            "value": [
+              15000,
+              60000
+            ],
+            "assumed": "Per term; boarding or private schools."
+          },
+          "frequency": "term"
+        },
+        {
+          "name": "loan_repayment",
+          "amount": {
+            "value": [
+              3000,
+              25000
+            ],
+            "assumed": "Check-off SACCO or bank loan, monthly."
+          },
+          "frequency": "monthly"
+        },
+        {
+          "name": "black_tax",
+          "amount": {
+            "value": [
+              2000,
+              10000
+            ],
+            "assumed": "Support to parents and siblings, monthly."
+          },
+          "frequency": "monthly"
+        }
+      ],
+      "buffers": {
+        "savings_days": {
+          "value": [
+            5,
+            30
+          ],
+          "assumed": "Often runs short before payday."
+        },
+        "credit": [
+          "check-off loan",
+          "Fuliza",
+          "SACCO"
+        ]
+      },
+      "policy_exposure": [
+        "vat_bread",
+        "excise_mobile_money",
+        "paye_and_levies",
+        "motor_vehicle_tax_if_car_owner"
+      ],
+      "cost_of_one_day_off": "public servants risk disciplinary action for protesting during work hours"
+    },
+    {
+      "profile_id": "professional_high",
+      "label": "Corporate professional or entrepreneur",
+      "livelihoods": [
+        "salaried worker (HR manager)",
+        "corporate executive",
+        "business executive",
+        "tech entrepreneur"
+      ],
+      "income": {
+        "pattern": "monthly",
+        "gross_per_month": {
+          "value": [
+            120000,
+            600000
+          ],
+          "assumed": "Verify."
+        },
+        "deductions": [
+          "paye",
+          "housing_levy_rate",
+          "health_contribution",
+          "nssf"
+        ],
+        "pay_day": "salary_day"
+      },
+      "obligations": [
+        {
+          "name": "rent_or_mortgage",
+          "amount": {
+            "value": [
+              40000,
+              150000
+            ],
+            "assumed": "Monthly."
+          },
+          "frequency": "monthly",
+          "due": "rent_due_day"
+        },
+        {
+          "name": "school_fees",
+          "amount": {
+            "value": [
+              80000,
+              400000
+            ],
+            "assumed": "Per term, private or international schools."
+          },
+          "frequency": "term"
+        },
+        {
+          "name": "car_costs",
+          "amount": {
+            "value": [
+              15000,
+              40000
+            ],
+            "assumed": "Fuel, insurance, monthly."
+          },
+          "frequency": "monthly"
+        },
+        {
+          "name": "household_staff",
+          "amount": {
+            "value": [
+              15000,
+              30000
+            ],
+            "assumed": "Monthly."
+          },
+          "frequency": "monthly"
+        },
+        {
+          "name": "food",
+          "amount": {
+            "value": [
+              1500,
+              4000
+            ],
+            "assumed": "Household daily."
+          },
+          "frequency": "daily"
+        }
+      ],
+      "buffers": {
+        "savings_days": {
+          "value": [
+            30,
+            180
+          ],
+          "assumed": "Savings, investments."
+        },
+        "credit": [
+          "bank",
+          "credit card"
+        ]
+      },
+      "policy_exposure": [
+        "motor_vehicle_tax",
+        "paye_and_levies",
+        "vat_financial_services",
+        "eco_levy"
+      ],
+      "cost_of_one_day_off": "low financially; reputational risk"
+    },
+    {
+      "profile_id": "student_or_jobseeker",
+      "label": "University student or unemployed graduate",
+      "livelihoods": [
+        "university student",
+        "unemployed graduate"
+      ],
+      "income": {
+        "pattern": "irregular",
+        "per_month": {
+          "value": [
+            2000,
+            12000
+          ],
+          "assumed": "HELB, family transfers, casual or online gigs."
+        },
+        "variability": {
+          "value": 0.6,
+          "assumed": "Very irregular."
+        }
+      },
+      "obligations": [
+        {
+          "name": "rent_or_hostel",
+          "amount": {
+            "value": [
+              2000,
+              8000
+            ],
+            "assumed": "Monthly; 0 if living with parents."
+          },
+          "frequency": "monthly",
+          "due": "rent_due_day"
+        },
+        {
+          "name": "food",
+          "amount": {
+            "value": [
+              150,
+              350
+            ],
+            "assumed": "Daily."
+          },
+          "frequency": "daily"
+        },
+        {
+          "name": "data_bundles",
+          "amount": {
+            "value": [
+              500,
+              1500
+            ],
+            "assumed": "Monthly; job search and school."
+          },
+          "frequency": "monthly"
+        },
+        {
+          "name": "university_fees",
+          "amount": {
+            "value": [
+              0,
+              30000
+            ],
+            "assumed": "Per semester for students only."
+          },
+          "frequency": "term"
+        }
+      ],
+      "buffers": {
+        "savings_days": {
+          "value": [
+            0,
+            5
+          ],
+          "assumed": "Depends on family."
+        },
+        "credit": [
+          "family",
+          "Fuliza",
+          "friends"
+        ]
+      },
+      "policy_exposure": [
+        "vat_bread",
+        "excise_mobile_money",
+        "excise_on_data_airtime"
+      ],
+      "cost_of_one_day_off": "near zero; most available group for protests"
+    },
+    {
+      "profile_id": "minor_dependant",
+      "label": "School pupil or student (minor)",
+      "livelihoods": [
+        "primary school pupil",
+        "secondary school student"
+      ],
+      "income": {
+        "pattern": "none",
+        "pocket_money_per_week": {
+          "value": [
+            0,
+            300
+          ],
+          "assumed": "From parents."
+        }
+      },
+      "obligations": [],
+      "buffers": {
+        "savings_days": {
+          "value": [
+            0,
+            0
+          ],
+          "assumed": "Household budget belongs to the parent."
+        },
+        "credit": []
+      },
+      "policy_exposure": [
+        "household_effects_via_parents"
+      ],
+      "cost_of_one_day_off": "n/a; protest participation by minors should be reported separately",
+      "_note": "Minors have no own budget. They see the household's situation through the parent's choices (e.g. sent home for fees)."
+    },
+    {
+      "profile_id": "political_office",
+      "label": "Elected politician (MP, senator, governor, MCA, women rep)",
+      "livelihoods": [
+        "politician (MP)",
+        "politician (senator)",
+        "politician (governor)",
+        "politician (MCA)",
+        "politician (women representative)"
+      ],
+      "income": {
+        "pattern": "monthly",
+        "gross_per_month": {
+          "value": [
+            150000,
+            1000000
+          ],
+          "assumed": "MCA low end to governor high end; verify against SRC gazette 2023/24."
+        },
+        "pay_day": "salary_day"
+      },
+      "obligations": [
+        {
+          "name": "constituent_harambee_and_requests",
+          "amount": {
+            "value": [
+              50000,
+              300000
+            ],
+            "assumed": "Monthly; funerals, fees, fundraisers."
+          },
+          "frequency": "monthly"
+        }
+      ],
+      "buffers": {
+        "savings_days": {
+          "value": [
+            90,
+            365
+          ],
+          "assumed": "High."
+        },
+        "credit": [
+          "bank"
+        ]
+      },
+      "policy_exposure": [
+        "vote_on_bill",
+        "constituent_pressure",
+        "personal_security_during_protests"
+      ],
+      "cost_of_one_day_off": "n/a; decisions are about votes, statements and constituency visits",
+      "_note": "Economics barely constrain these agents. What matters is constituent pressure and party position."
+    }
+  ],
+  "policy_levers_fb24": {
+    "_note": "Price and fee changes each Finance Bill 2024 clause would cause if enacted, keyed by the clause ids in events.json. Applied only in scenarios where the clause passes.",
+    "vat_bread": {
+      "effect": "bread price +16% (bread was zero-rated)",
+      "example": "400g loaf up by about KES 10",
+      "src": "mwananchi_amendments"
+    },
+    "motor_vehicle_tax": {
+      "effect": "2.5% of vehicle value per year, min KES 5,000, max KES 100,000",
+      "src": "mwananchi_amendments"
+    },
+    "excise_mobile_money": {
+      "effect": "Excise on mobile money transfer fees raised from 15% to 20%",
+      "assumed": "Rate as published in the bill; confirm against the bill text."
+    },
+    "vat_financial_services": {
+      "effect": "VAT on some financial services (e.g. card fees, forex)",
+      "assumed": "Confirm scope against the bill text."
+    },
+    "eco_levy": {
+      "effect": "Levy on listed goods incl. sanitary pads, diapers, plastics, phones; amended to imported finished goods only",
+      "src": "peopledaily_10_dropped",
+      "assumed": "Rates per item to be taken from the bill schedule."
+    }
+  },
+  "sources": {
+    "epra_jun2024": "https://www.kenyans.co.ke/news/101631-epra-announces-june-2024-fuel-prices",
+    "viffa_boda_2025": "https://citizen.digital/article/boda-boda-riders-with-asset-financed-bikes-earn-more-than-those-using-rented-motorcycles-survey-n361268",
+    "mwananchi_amendments": "https://mwananchi.co.tz/kenya/business/finance-bill-2024-mps-drop-plan-to-tax-bread-and-motor-vehicles-4661708",
+    "peopledaily_10_dropped": "https://peopledaily.digital/business/tax-proposals-in-finance-bill-2024",
+    "knbs_inflation_jun2024": "https://eastleighvoice.co.ke/east africa inflation/54790/june-inflation-down-to-four-year-low-on-easing-food-prices",
+    "knbs_poverty_report_2022": "https://www.knbs.or.ke/wp-content/uploads/2024/10/The-Kenya-Poverty-Report-2022.pdf"
+  }
+}

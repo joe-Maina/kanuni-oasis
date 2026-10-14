@@ -1,0 +1,47 @@
+{
+  "run_id": "as2_fb24_month_seed0",
+  "seed": 0,
+  "condition": "b",
+  "scenario": "../../../shared/scenarios/ke_fb24_backtest.json",
+  "bill_name": "Finance Bill 2024",
+  "personas": "../../../shared/personas.json",
+  "profiles": "../../../shared/countries/ke/livelihood_profiles.json",
+  "channels": "../../../shared/countries/ke/channels.json",
+  "model": {
+    "name": "qwen3.5:27b",
+    "url": "http://127.0.0.1:8765/v1",
+    "request_timeout_s": 600
+  },
+  "model_cutoff": "after 2024-06 (knows the outcome; not reportable)",
+  "_schedule_note": "30 days, 3 Jun - 2 Jul 2024: weekly before the protests, daily 17-30 Jun (amendments, votes, withdrawal, protests), then a final 2-day step. 17 steps.",
+  "schedule": [
+    {
+      "from": "2024-06-03",
+      "to": "2024-06-16",
+      "step_days": 7
+    },
+    {
+      "from": "2024-06-17",
+      "to": "2024-06-30",
+      "step_days": 1
+    },
+    {
+      "from": "2024-07-01",
+      "to": "2024-07-02",
+      "step_days": 2
+    }
+  ],
+  "agent_config": {
+    "max_react_turns": 8,
+    "enable_todo_list": false,
+    "disabled_skill_ids": [
+      "built-in@daily-guidance",
+      "daily-guidance"
+    ]
+  },
+  "router": {
+    "max_steps": 4
+  },
+  "max_concurrency": 4,
+  "_agent_config_note": "AS2's built-in daily-guidance skill (hour-by-hour day plans written to files) is disabled: our steps are days or weeks, and it used up the agents' turns."
+}
