@@ -1,12 +1,19 @@
 """Convert a Kanuni AS2 run folder into the shared output plus AS2-only files.
 
 Writes:
-  - output.jsonl: shared format, exactly SHARED_FIELDS, simulator "agentsociety".
-    One row per agent per step; `day` is the step's first date.
+  - output.jsonl: shared format, exactly SHARED_FIELDS then OUTCOME_FIELDS,
+    simulator "agentsociety". One row per agent per step; `day` is the
+    step's first date.
   - household_days.jsonl: one row per agent per simulated day (money, work,
     missed payments, protest), AS2 only.
   - summary.json: stance per step, failure counts (model vs transport),
-    what AS2 corrected on its own, protest turnout by county and day.
+    what AS2 corrected on its own, protest turnout by county and day, and
+    with an outcome plan, per-step actions by category, wellbeing and issue
+    answers.
+
+With an outcome plan, "intent" holds the action the agent says it intends,
+from its category's list (kanuni_as2/survey.py), and "actions" lists the
+plan actions it took (take_action) by their ids.
 
 parse_failed is true when the agent's step did not end with the model's own
 finish (error, network failure or AS2 fallback) or its stance answer was not
@@ -22,12 +29,17 @@ from collections import Counter, defaultdict
 from datetime import date, timedelta
 from pathlib import Path
 
+from kanuni_as2.survey import summarise
+
 SHARED_FIELDS = [
     "run_id", "simulator", "seed", "condition", "day", "agent_id",
     "connectivity", "age_group", "county", "urban_rural", "livelihood",
     "stance", "intent", "actions", "post_text", "channel_exposures",
     "parse_failed",
 ]
+# After the shared fields: what the policy survey adds (see OASIS's export).
+OUTCOME_FIELDS = ["stakeholder_category", "phase", "wellbeing", "reason",
+                  "answers", "answer_errors"]
 WRITTEN = ("post_online", "post_in_whatsapp_group")
 MODEL_FAILURES = ("llm_error", "no_valid_finish", "parse_failed")
 
@@ -93,13 +105,20 @@ def export_run(run_dir: Path) -> dict:
             "livelihood": p["livelihood"],
             "stance": rec["stance"],
             "intent": rec["intent"],
-            "actions": [a["action"] for a in acts],
+            "actions": [a.get("policy_action", a["action"]) for a in acts],
             "post_text": "\n\n".join(texts) or None,
             "channel_exposures": exposures,
             "parse_failed": rec["action_status"] != "ok"
             or rec["interview_status"] != "ok",
+            "stakeholder_category": rec.get("stakeholder_category",
+                                            p.get("stakeholder_category")),
+            "phase": rec.get("phase"),
+            "wellbeing": rec.get("wellbeing"),
+            "reason": rec.get("reason"),
+            "answers": rec.get("answers") or {},
+            "answer_errors": rec.get("answer_errors") or {},
         }
-        assert list(row) == SHARED_FIELDS
+        assert list(row) == SHARED_FIELDS + OUTCOME_FIELDS
         out_rows.append(row)
 
     with open(run_dir / "output.jsonl", "w", encoding="utf-8") as f:
@@ -148,7 +167,8 @@ def export_run(run_dir: Path) -> dict:
 
     protests = Counter()
     for row in env_log:
-        if row["type"] == "action" and row["action"] == "join_protest":
+        if row["type"] == "action" and (row["action"] == "join_protest"
+                                        or row.get("policy_action") == "protest"):
             protests[(row["date"], row["county"])] += 1
     summary["protest_turnout"] = [
         {"date": d, "county": c, "agents": k}
@@ -193,6 +213,15 @@ def export_run(run_dir: Path) -> dict:
         "agent_llm_calls": total("llm_calls"),
         "env_requests": total("env_requests"),
     }
+    plan = None
+    if cfg.get("outcomes"):
+        plan_path = Path(cfg["outcomes"])
+        if not plan_path.exists():  # run made on another machine
+            plan_path = run_dir / plan_path.name
+        plan = json.loads(plan_path.read_text())
+    summary["outcomes"] = summarise(out_rows, plan)
+    summary["totals"]["issue_answers_failed"] = sum(
+        len(r["answer_errors"]) for r in out_rows)
     (run_dir / "summary.json").write_text(json.dumps(summary, indent=2))
     return summary
 

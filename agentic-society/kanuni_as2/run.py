@@ -7,6 +7,9 @@ Each step (one day, or a week in quiet periods) runs:
      through the env router (talk to people, change spending or work,
      borrow, protest, contact the MP);
   3. each agent answers our strict stance survey (not stored in memory);
+     with an outcome plan from the API (config "outcomes"), the policy's own
+     survey (kanuni_as2/survey.py), and the civic actions are the plan's
+     behaviours for the person's category (envs/policy.py);
   4. the modules book the step: income, costs, missed payments, messages.
 
 We run our own step loop instead of AgentSociety.step(), which raises if any
@@ -56,11 +59,20 @@ WORLD_TEXT = (
     "this person would do today, then finish the day.\n"
     "Act as the person you are, not as an assistant.")
 
+# For runs with an outcome plan: the same world, with the policy's own
+# actions (shown in each person's observation) in place of the fixed ones.
+POLICY_WORLD_TEXT = WORLD_TEXT.replace(
+    "join a protest; contact your MP; or speak at a community meeting.",
+    "take one of the actions open to you about the policy, listed in your "
+    "observation (take_action); or speak at a community meeting.")
+assert POLICY_WORLD_TEXT != WORLD_TEXT
+
 
 def load_config(path: Path) -> dict:
     cfg = json.loads(path.read_text())
-    for key in ("personas", "profiles", "channels", "scenario"):
-        cfg[key] = str((path.parent / cfg[key]).resolve())
+    for key in ("personas", "profiles", "channels", "scenario", "outcomes"):
+        if cfg.get(key):
+            cfg[key] = str((path.parent / cfg[key]).resolve())
     return cfg
 
 
@@ -138,7 +150,9 @@ async def run(cfg: dict) -> Path:
     from kanuni_as2.envs.civic import KanuniCivicEnv
     from kanuni_as2.envs.household import KanuniHouseholdEnv
     from kanuni_as2.envs.information import KanuniInformationEnv
+    from kanuni_as2.envs.policy import KanuniPolicyEnv
     from kanuni_as2.stance import interview_prompt, parse_interview
+    from kanuni_as2.survey import SurveyPlan, phase_for
 
     retries = TransportRetryCounter()
     get_logger().addHandler(retries)
@@ -162,14 +176,17 @@ async def run(cfg: dict) -> Path:
     log_path = str(run_dir / "env_log.jsonl")
     info = KanuniInformationEnv(world, log_path)
     household = KanuniHouseholdEnv(world, log_path)
-    civic = KanuniCivicEnv(world, log_path)
+    survey = (SurveyPlan(load_json(cfg["outcomes"]))
+              if cfg.get("outcomes") else None)
+    civic = (KanuniPolicyEnv(world, log_path, survey, cfg["bill_name"])
+             if survey else KanuniCivicEnv(world, log_path))
     household.civic = civic
     rcfg = cfg.get("router", {})
     router = ReActRouter(env_modules=[info, household, civic],
                          max_steps=rcfg.get("max_steps", 4),
                          max_llm_call_retry=1)
     # A fixed, reviewed world description instead of one the model writes.
-    router._world_description = WORLD_TEXT
+    router._world_description = POLICY_WORLD_TEXT if survey else WORLD_TEXT
 
     steps = step_dates(cfg)
     start = datetime.combine(steps[0][0], datetime.min.time())
@@ -190,12 +207,27 @@ async def run(cfg: dict) -> Path:
     prompt = interview_prompt(cfg["bill_name"])
     sem = asyncio.Semaphore(cfg["max_concurrency"])
     records = run_dir / "agent_steps.jsonl"
+    category = {p["agent_id"]: survey.category_of(p) if survey
+                else p.get("stakeholder_category") for p in personas}
+
+    def ask(aid: int, phase: str | None):
+        """(prompt, parser) for one agent: the policy survey for its
+        category and the phase, or the stance interview."""
+        if survey is None:
+            return prompt, parse_interview
+        cat = category[aid]
+        return (survey.prompt(cfg["bill_name"], cat, phase),
+                lambda raw: survey.parse(raw, cat, phase))
 
     async def agent_step(aid: int, step_idx: int, day: date, tick: int,
                          t: datetime):
         ws = ws_root / f"agent_{aid:04d}"
+        phase = phase_for(step_idx, len(steps), cfg.get("pilot_steps")) \
+            if survey else None
+        iv_prompt, parse = ask(aid, phase)
         rec = {"step_index": step_idx, "date": day.isoformat(),
-               "days": tick // 86400, "agent_id": aid}
+               "days": tick // 86400, "agent_id": aid,
+               "stakeholder_category": category[aid], "phase": phase}
         async with sem:
             t0 = time.time()
             agent = await KanuniPersonAgent.from_workspace(ws, proxy)
@@ -216,22 +248,20 @@ async def run(cfg: dict) -> Path:
             agent.reset_counters()
             t1 = time.time()
             try:
-                raw = await agent.ask(prompt, readonly=True, t=t)
+                raw = await agent.ask(iv_prompt, readonly=True, t=t)
                 if agent.kanuni_counts["fallback"]:
                     # AS2 made up an answer because the model never
                     # finished; not the model's own reply.
-                    parsed = {"ok": False, "stance": None, "intent": None,
-                              "reason": None,
+                    parsed = {**parse(None),
                               "error": "no finish; AS2 fallback answer"}
                     iv_status = "no_valid_finish"
                 else:
-                    parsed = parse_interview(raw)
+                    parsed = parse(raw)
                     iv_status = "ok" if parsed["ok"] else "parse_failed"
                 iv_error = parsed["error"]
             except Exception as e:
                 raw = None
-                parsed = {"ok": False, "stance": None, "intent": None,
-                          "reason": None}
+                parsed = parse(None)
                 iv_status = classify_exception(e)
                 iv_error = f"{type(e).__name__}: {e}"[:500]
             rec.update(interview_status=iv_status, interview_raw=raw,
@@ -239,6 +269,9 @@ async def run(cfg: dict) -> Path:
                        interview_repaired=parsed.get("repaired"),
                        stance=parsed["stance"],
                        intent=parsed["intent"], reason=parsed["reason"],
+                       wellbeing=parsed.get("wellbeing"),
+                       answers=parsed.get("answers", {}),
+                       answer_errors=parsed.get("answer_errors", {}),
                        interview_counts=dict(agent.kanuni_counts),
                        interview_s=round(time.time() - t1, 1))
             try:

@@ -3,8 +3,12 @@
 Reads oasis.db (trace/post tables), agent_days.jsonl (stance, intent and
 LLM status from the runner), id_map.json and the persona file, and writes:
   - output.jsonl: one row per persona agent per simulated day, with exactly
-    the shared fields (see SHARED_FIELDS);
-  - summary.json: per-day stance summary and failure counts.
+    the shared fields (see SHARED_FIELDS) followed by OUTCOME_FIELDS;
+  - summary.json: per-day stance summary and failure counts, and with an
+    outcome plan, per-day actions by category, wellbeing and issue answers.
+
+With an outcome plan, "intent" holds the action the agent chose from its
+category's list (kanuni/survey.py) instead of one of stance.py's INTENTS.
 
 parse_failed is true when the agent's LLM turn produced no valid action
 (no tool call, model error, or every tool call rejected by the platform) or
@@ -21,12 +25,18 @@ from collections import Counter, defaultdict
 from datetime import date, timedelta
 from pathlib import Path
 
+from kanuni.survey import summarise
+
 SHARED_FIELDS = [
     "run_id", "simulator", "seed", "condition", "day", "agent_id",
     "connectivity", "age_group", "county", "urban_rural", "livelihood",
     "stance", "intent", "actions", "post_text", "channel_exposures",
     "parse_failed",
 ]
+# After the shared fields: what the policy survey adds. Empty or null on
+# runs without an outcome plan, except the category when the persona has one.
+OUTCOME_FIELDS = ["stakeholder_category", "phase", "wellbeing", "reason",
+                  "answers", "answer_errors"]
 MODEL_ACTION_FAILURES = ("no_tool_call", "llm_error", "action_rejected")
 # Trace rows that are bookkeeping, not agent choices.
 NOT_ACTIONS = {"refresh", "interview", "sign_up"}
@@ -160,8 +170,15 @@ def export_run(run_dir: Path) -> dict:
             "post_text": "\n\n".join(t for t in texts if t) or None,
             "channel_exposures": exposures,
             "parse_failed": failed,
+            "stakeholder_category": rec.get("stakeholder_category",
+                                            p.get("stakeholder_category")),
+            "phase": rec.get("phase"),
+            "wellbeing": rec.get("wellbeing"),
+            "reason": rec.get("reason"),
+            "answers": rec.get("answers") or {},
+            "answer_errors": rec.get("answer_errors") or {},
         }
-        assert list(row) == SHARED_FIELDS
+        assert list(row) == SHARED_FIELDS + OUTCOME_FIELDS
         out_rows.append(row)
 
     with open(run_dir / "output.jsonl", "w", encoding="utf-8") as f:
@@ -230,6 +247,15 @@ def export_run(run_dir: Path) -> dict:
                                  or r["interview_status"] == "context_overflow"
                                  for r in recs),
     }
+    plan = None
+    if cfg.get("outcomes"):
+        plan_path = Path(cfg["outcomes"])
+        if not plan_path.exists():  # run made on another machine
+            plan_path = run_dir / plan_path.name
+        plan = json.loads(plan_path.read_text())
+    summary["outcomes"] = summarise(out_rows, plan)
+    summary["totals"]["issue_answers_failed"] = sum(
+        len(r["answer_errors"]) for r in out_rows)
     (run_dir / "summary.json").write_text(json.dumps(summary, indent=2))
     return summary
 

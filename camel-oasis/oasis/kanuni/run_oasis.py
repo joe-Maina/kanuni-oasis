@@ -6,7 +6,10 @@ One tick = one simulated day. Each day:
   2. the recommendation table is rebuilt;
   3. each persona agent observes its feed and acts once via the LLM;
   4. each persona agent is interviewed for stance and intent (not stored in
-     its memory, so the survey does not steer later behaviour).
+     its memory, so the survey does not steer later behaviour). With an
+     outcome plan from the API (config "outcomes"), the interview is the
+     policy's own survey instead (kanuni/survey.py): stance, wellbeing, the
+     action they intend from their category's list, and its issue questions.
 
 We drive the day loop ourselves instead of calling OasisEnv.step(), because
 step() discards each agent's result and we need exact per-agent failure
@@ -31,6 +34,7 @@ from camel.prompts import TextPrompt
 from camel.types import ModelPlatformType
 
 from kanuni.stance import interview_prompt, parse_interview
+from kanuni.survey import SurveyPlan, phase_for
 
 REPO = Path(__file__).resolve().parent.parent
 # CAMEL warns on every call once the memory window is full; that is intended.
@@ -228,6 +232,9 @@ async def run(cfg: dict) -> Path:
         timeline["events"] += extra["events"]
     model = make_model(cfg)
     actions = [oasis.ActionType(a) for a in cfg["available_actions"]]
+    survey = (SurveyPlan(json.loads(Path(cfg["outcomes"]).read_text()))
+              if cfg.get("outcomes") else None)
+    category = {}
 
     # OASIS needs user ids 0..N-1 with no gaps, so persona agent_ids are
     # mapped to OASIS ids; media accounts follow the personas.
@@ -258,6 +265,8 @@ async def run(cfg: dict) -> Path:
                                   cfg["max_comments_per_post"])
         agent.memory._window_size = cfg["memory_window_messages"]
         id_map[oid] = {"kind": "persona", "agent_id": p["agent_id"]}
+        category[oid] = survey.category_of(p) if survey else \
+            p.get("stakeholder_category")
     media_ids = {}
     for acct in timeline["media_accounts"]:
         oid = len(id_map)
@@ -305,21 +314,34 @@ async def run(cfg: dict) -> Path:
     n_days = (date.fromisoformat(cfg["end_date"]) - start).days + 1
     sem = asyncio.Semaphore(cfg["max_concurrency"])
     agent_days = run_dir / "agent_days.jsonl"
-    prompt = interview_prompt(cfg.get("bill_name", "Finance Bill 2024"))
+    bill = cfg.get("bill_name", "Finance Bill 2024")
+    prompt = interview_prompt(bill)
+
+    def ask(oid, phase):
+        """(prompt, parser) for one agent: the policy survey for its
+        category and the phase, or the stance interview."""
+        if survey is None:
+            return prompt, parse_interview
+        cat = category[oid]
+        return (survey.prompt(bill, cat, phase),
+                lambda raw: survey.parse(raw, cat, phase))
 
     async def agent_day(oid, agent, day_idx, day):
+        phase = phase_for(day_idx, n_days, cfg.get("pilot_steps")) \
+            if survey else None
+        iv_prompt, parse = ask(oid, phase)
         async with sem:
             t0 = time.time()
             result = await agent.perform_action_by_llm()
             status, calls, error = classify_llm_result(result)
             t1 = time.time()
             try:
-                raw = await interview(agent, prompt)
-                parsed = parse_interview(raw)
+                raw = await interview(agent, iv_prompt)
+                parsed = parse(raw)
                 iv_status = "ok" if parsed["ok"] else "parse_failed"
                 iv_error = parsed["error"]
             except Exception as e:  # counted, not retried
-                raw, parsed = None, parse_interview(None)
+                raw, parsed = None, parse(None)
                 iv_status = error_status(e)
                 iv_error = f"{type(e).__name__}: {e}"
         write_jsonl(agent_days, {
@@ -332,6 +354,10 @@ async def run(cfg: dict) -> Path:
             "interview_repaired": parsed.get("repaired"),
             "stance": parsed["stance"],
             "intent": parsed["intent"], "reason": parsed["reason"],
+            "stakeholder_category": category[oid], "phase": phase,
+            "wellbeing": parsed.get("wellbeing"),
+            "answers": parsed.get("answers", {}),
+            "answer_errors": parsed.get("answer_errors", {}),
             "action_s": round(t1 - t0, 1),
             "interview_s": round(time.time() - t1, 1)})
         return status, parsed["ok"]

@@ -37,10 +37,10 @@ class KanuniPersonAgent(PersonAgent):
         return {type(m).__name__: m for m in mods}
 
     def observation_text(self) -> str:
-        m = self._modules()
-        parts = [m["KanuniInformationEnv"].observe_for(self.id),
-                 m["KanuniHouseholdEnv"].observe_for(self.id),
-                 m["KanuniCivicEnv"].observe_for(self.id)]
+        # Information, household, then civic life or the policy's actions
+        # (KanuniCivicEnv or KanuniPolicyEnv), in the router's order.
+        parts = [m.observe_for(self.id) for m in self._modules().values()
+                 if hasattr(m, "observe_for")]
         return "\n\n".join(p for p in parts if p)
 
     async def ask_env(self, ctx: dict, message: str, readonly: bool,

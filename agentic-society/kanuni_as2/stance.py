@@ -34,13 +34,12 @@ _THINK = re.compile(r"<think>.*?</think>", re.S)
 _FENCE = re.compile(r"```(?:json)?\s*(.*?)```", re.S)
 
 
-def parse_interview(text: str | None) -> dict:
-    """Return {"ok", "stance", "intent", "reason", "error"}."""
-    out = {"ok": False, "stance": None, "intent": None, "reason": None,
-           "error": None, "repaired": None}
+def extract_json(text: str | None) -> tuple[dict | None, str | None,
+                                             str | None]:
+    """(object, error, repair) from a model reply; the object is None when
+    the reply holds no JSON object."""
     if not text:
-        out["error"] = "empty response"
-        return out
+        return None, "empty response", None
     body = _THINK.sub("", text).strip()
     fence = _FENCE.search(body)
     if fence:
@@ -51,20 +50,38 @@ def parse_interview(text: str | None) -> dict:
         body, end = body + "}", len(body)
         repaired = "added closing brace"
     if start == -1 or end <= start:
-        out["error"] = "no JSON object"
-        return out
+        return None, "no JSON object", None
     try:
         obj = json.loads(body[start:end + 1])
     except json.JSONDecodeError as e:
-        out["error"] = f"invalid JSON: {e.msg}"
+        return None, f"invalid JSON: {e.msg}", None
+    if not isinstance(obj, dict):
+        return None, "no JSON object", None
+    return obj, None, repaired
+
+
+def small_int(value, lo: int, hi: int) -> int | None:
+    """An integer in [lo, hi], also from "1" or 1.0; None otherwise."""
+    if isinstance(value, str) and re.fullmatch(r"[+-]?\d", value.strip()):
+        value = int(value)
+    if isinstance(value, float) and value.is_integer():
+        value = int(value)
+    if not isinstance(value, int) or isinstance(value, bool) \
+            or not lo <= value <= hi:
+        return None
+    return value
+
+
+def parse_interview(text: str | None) -> dict:
+    """Return {"ok", "stance", "intent", "reason", "error"}."""
+    out = {"ok": False, "stance": None, "intent": None, "reason": None,
+           "error": None, "repaired": None}
+    obj, error, repaired = extract_json(text)
+    if obj is None:
+        out["error"] = error
         return out
-    stance = obj.get("stance")
-    if isinstance(stance, str) and re.fullmatch(r"[+-]?\d", stance.strip()):
-        stance = int(stance)
-    if isinstance(stance, float) and stance.is_integer():
-        stance = int(stance)
-    if not isinstance(stance, int) or isinstance(stance, bool) \
-            or not -2 <= stance <= 2:
+    stance = small_int(obj.get("stance"), -2, 2)
+    if stance is None:
         out["error"] = f"bad stance: {obj.get('stance')!r}"
         return out
     intent = obj.get("intent")
