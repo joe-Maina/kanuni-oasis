@@ -9,11 +9,16 @@ step:
   - stance on the policy, -2..2, as in stance.py, so stance stays
     comparable with the Finance Bill runs;
   - wellbeing, -2..2: how the policy has left their daily life so far;
-  - action: what they intend to do about it, one of their category's
-    behaviour ids (this fills the shared "intent" field);
+  - action: what they did about it today, one of their category's
+    behaviour ids, or no_change for nothing new today (this fills the
+    shared "intent" field). Asking for today rather than an intention
+    keeps the answer from repeating a fixed position every day, so the
+    counts show what people do over time;
   - reason, one sentence;
   - answers to at most a few issue questions for their category and the
-    run's phase (pilot for the first steps, then steady_state).
+    run's phase (pilot for the first steps, then steady_state). An issue
+    narrowed to some stakeholder groups (asked_of_groups) is asked only
+    of people in them (the persona's group_id).
 
 The parser does not guess, like stance.py, and makes the same one repair
 (a dropped closing brace, which the nested answers object can hide from
@@ -53,17 +58,21 @@ class SurveyPlan:
         return self.behaviours.get(category) or [
             {"id": NO_CHANGE, "label": "Carry on as before"}]
 
-    def questions_for(self, category: str, phase: str) -> list[dict]:
+    def questions_for(self, category: str, phase: str,
+                      group: str | None = None) -> list[dict]:
         return [i for i in self.issues
-                if category in i["asked_of"] and i["phase"] == phase]
+                if category in i["asked_of"] and i["phase"] == phase
+                and (not i.get("asked_of_groups") or group in i["asked_of_groups"])]
 
-    def prompt(self, bill: str, category: str, phase: str) -> str:
+    def prompt(self, bill: str, category: str, phase: str,
+               group: str | None = None) -> str:
         return survey_prompt(bill, self.behaviours_for(category),
-                             self.questions_for(category, phase))
+                             self.questions_for(category, phase, group))
 
-    def parse(self, text: str | None, category: str, phase: str) -> dict:
+    def parse(self, text: str | None, category: str, phase: str,
+              group: str | None = None) -> dict:
         return parse_survey(text, self.behaviours_for(category),
-                            self.questions_for(category, phase))
+                            self.questions_for(category, phase, group))
 
 
 def phase_for(step_index: int, n_steps: int, pilot_steps: int | None = None) -> str:
@@ -90,14 +99,19 @@ def survey_prompt(bill: str, behaviours: list[dict], questions: list[dict]) -> s
         '{"stance": <integer from -2 (strongly oppose) to 2 (strongly support)>, '
         '"wellbeing": <integer from -2 (it has left you much worse off) to 2 '
         '(much better off); 0 if it has not changed your life>, '
-        '"action": "<what you intend to do about it: one id from the list below>", '
+        '"action": "<what you did about it today: one id from the list below>", '
         '"reason": "<one short sentence>"'
         + (', "answers": {"<question id>": <answer>, ...}' if questions else "")
         + "}",
         "",
+        "For action, answer for today only. Something you did on an earlier "
+        "day counts only if you did it again today; if you did nothing new "
+        f"about it today, answer {NO_CHANGE}.",
+        "",
         "Actions (id: meaning):",
     ]
-    lines += [f"- {b['id']}: {b['label']}" for b in behaviours]
+    lines += [f"- {b['id']}: {b['label']}" + (" (nothing new today)" if b["id"] == NO_CHANGE else "")
+              for b in behaviours]
     if questions:
         lines += ["", "Questions (answer every one, by id):"]
         lines += [f"- {q['id']}: {q['question']} Answer {_answer_hint(q)}."

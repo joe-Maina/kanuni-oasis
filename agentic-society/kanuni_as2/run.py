@@ -209,15 +209,16 @@ async def run(cfg: dict) -> Path:
     records = run_dir / "agent_steps.jsonl"
     category = {p["agent_id"]: survey.category_of(p) if survey
                 else p.get("stakeholder_category") for p in personas}
+    group = {p["agent_id"]: p.get("group_id") for p in personas}
 
     def ask(aid: int, phase: str | None):
         """(prompt, parser) for one agent: the policy survey for its
         category and the phase, or the stance interview."""
         if survey is None:
             return prompt, parse_interview
-        cat = category[aid]
-        return (survey.prompt(cfg["bill_name"], cat, phase),
-                lambda raw: survey.parse(raw, cat, phase))
+        cat, grp = category[aid], group[aid]
+        return (survey.prompt(cfg["bill_name"], cat, phase, grp),
+                lambda raw: survey.parse(raw, cat, phase, grp))
 
     async def agent_step(aid: int, step_idx: int, day: date, tick: int,
                          t: datetime):

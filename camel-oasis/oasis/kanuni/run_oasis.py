@@ -234,7 +234,7 @@ async def run(cfg: dict) -> Path:
     actions = [oasis.ActionType(a) for a in cfg["available_actions"]]
     survey = (SurveyPlan(json.loads(Path(cfg["outcomes"]).read_text()))
               if cfg.get("outcomes") else None)
-    category = {}
+    category, group = {}, {}
 
     # OASIS needs user ids 0..N-1 with no gaps, so persona agent_ids are
     # mapped to OASIS ids; media accounts follow the personas.
@@ -267,6 +267,7 @@ async def run(cfg: dict) -> Path:
         id_map[oid] = {"kind": "persona", "agent_id": p["agent_id"]}
         category[oid] = survey.category_of(p) if survey else \
             p.get("stakeholder_category")
+        group[oid] = p.get("group_id")
     media_ids = {}
     for acct in timeline["media_accounts"]:
         oid = len(id_map)
@@ -322,9 +323,9 @@ async def run(cfg: dict) -> Path:
         category and the phase, or the stance interview."""
         if survey is None:
             return prompt, parse_interview
-        cat = category[oid]
-        return (survey.prompt(bill, cat, phase),
-                lambda raw: survey.parse(raw, cat, phase))
+        cat, grp = category[oid], group[oid]
+        return (survey.prompt(bill, cat, phase, grp),
+                lambda raw: survey.parse(raw, cat, phase, grp))
 
     async def agent_day(oid, agent, day_idx, day):
         phase = phase_for(day_idx, n_days, cfg.get("pilot_steps")) \
