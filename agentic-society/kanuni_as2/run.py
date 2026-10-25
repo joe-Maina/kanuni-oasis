@@ -271,6 +271,7 @@ async def run(cfg: dict) -> Path:
                        stance=parsed["stance"],
                        intent=parsed["intent"], reason=parsed["reason"],
                        wellbeing=parsed.get("wellbeing"),
+                       satisfaction=parsed.get("satisfaction"),
                        answers=parsed.get("answers", {}),
                        answer_errors=parsed.get("answer_errors", {}),
                        interview_counts=dict(agent.kanuni_counts),

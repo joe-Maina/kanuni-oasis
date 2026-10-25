@@ -35,8 +35,8 @@ SHARED_FIELDS = [
 ]
 # After the shared fields: what the policy survey adds. Empty or null on
 # runs without an outcome plan, except the category when the persona has one.
-OUTCOME_FIELDS = ["stakeholder_category", "phase", "wellbeing", "reason",
-                  "answers", "answer_errors"]
+OUTCOME_FIELDS = ["stakeholder_category", "phase", "wellbeing", "satisfaction",
+                  "reason", "answers", "answer_errors"]
 MODEL_ACTION_FAILURES = ("no_tool_call", "llm_error", "action_rejected")
 # Trace rows that are bookkeeping, not agent choices.
 NOT_ACTIONS = {"refresh", "interview", "sign_up"}
@@ -174,6 +174,7 @@ def export_run(run_dir: Path) -> dict:
                                             p.get("stakeholder_category")),
             "phase": rec.get("phase"),
             "wellbeing": rec.get("wellbeing"),
+            "satisfaction": rec.get("satisfaction"),
             "reason": rec.get("reason"),
             "answers": rec.get("answers") or {},
             "answer_errors": rec.get("answer_errors") or {},

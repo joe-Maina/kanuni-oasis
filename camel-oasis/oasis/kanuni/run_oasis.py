@@ -8,8 +8,9 @@ One tick = one simulated day. Each day:
   4. each persona agent is interviewed for stance and intent (not stored in
      its memory, so the survey does not steer later behaviour). With an
      outcome plan from the API (config "outcomes"), the interview is the
-     policy's own survey instead (kanuni/survey.py): stance, wellbeing, the
-     action they intend from their category's list, and its issue questions.
+     policy's own survey instead (kanuni/survey.py): stance, wellbeing,
+     satisfaction (0-10), what they did about it today from their
+     category's list, and its issue questions.
 
 We drive the day loop ourselves instead of calling OasisEnv.step(), because
 step() discards each agent's result and we need exact per-agent failure
@@ -357,6 +358,7 @@ async def run(cfg: dict) -> Path:
             "intent": parsed["intent"], "reason": parsed["reason"],
             "stakeholder_category": category[oid], "phase": phase,
             "wellbeing": parsed.get("wellbeing"),
+            "satisfaction": parsed.get("satisfaction"),
             "answers": parsed.get("answers", {}),
             "answer_errors": parsed.get("answer_errors", {}),
             "action_s": round(t1 - t0, 1),

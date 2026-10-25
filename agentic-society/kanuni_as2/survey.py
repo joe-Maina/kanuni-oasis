@@ -9,6 +9,10 @@ step:
   - stance on the policy, -2..2, as in stance.py, so stance stays
     comparable with the Finance Bill runs;
   - wellbeing, -2..2: how the policy has left their daily life so far;
+  - satisfaction, 0..10: how satisfied they are with their life right
+    now, whatever the cause. A level, not a change, so it can be set
+    against the persona's baseline satisfaction (0-100) and followed day
+    by day with more range than wellbeing's five points;
   - action: what they did about it today, one of their category's
     behaviour ids, or no_change for nothing new today (this fills the
     shared "intent" field). Asking for today rather than an intention
@@ -23,7 +27,7 @@ step:
 The parser does not guess, like stance.py, and makes the same one repair
 (a dropped closing brace, which the nested answers object can hide from
 stance.py's check). The interview counts as ok only
-when stance, wellbeing and action are valid; each issue answer is checked
+when stance, wellbeing, satisfaction and action are valid; each issue answer is checked
 on its own and a bad or missing one is recorded in answer_errors, so issue
 failure rates are reported, not hidden.
 
@@ -99,6 +103,8 @@ def survey_prompt(bill: str, behaviours: list[dict], questions: list[dict]) -> s
         '{"stance": <integer from -2 (strongly oppose) to 2 (strongly support)>, '
         '"wellbeing": <integer from -2 (it has left you much worse off) to 2 '
         '(much better off); 0 if it has not changed your life>, '
+        '"satisfaction": <integer from 0 (not at all satisfied) to 10 (completely '
+        'satisfied): how satisfied you are with your life right now>, '
         '"action": "<what you did about it today: one id from the list below>", '
         '"reason": "<one short sentence>"'
         + (', "answers": {"<question id>": <answer>, ...}' if questions else "")
@@ -136,9 +142,9 @@ def _answer(q: dict, value):
 
 
 def parse_survey(text: str | None, behaviours: list[dict], questions: list[dict]) -> dict:
-    """Return {"ok", "stance", "wellbeing", "intent", "reason", "answers",
+    """Return {"ok", "stance", "wellbeing", "satisfaction", "intent", "reason", "answers",
     "answer_errors", "error", "repaired"}. "intent" is the chosen action id."""
-    out = {"ok": False, "stance": None, "wellbeing": None, "intent": None,
+    out = {"ok": False, "stance": None, "wellbeing": None, "satisfaction": None, "intent": None,
            "reason": None, "answers": {}, "answer_errors": {}, "error": None,
            "repaired": None}
     obj, error, repaired = extract_json(text)
@@ -158,6 +164,10 @@ def parse_survey(text: str | None, behaviours: list[dict], questions: list[dict]
     if wellbeing is None:
         out["error"] = f"bad wellbeing: {obj.get('wellbeing')!r}"
         return out
+    satisfaction = small_int(obj.get("satisfaction"), 0, 10)
+    if satisfaction is None:
+        out["error"] = f"bad satisfaction: {obj.get('satisfaction')!r}"
+        return out
     action = obj.get("action")
     if isinstance(action, str):
         action = action.strip().lower().replace(" ", "_").replace("-", "_")
@@ -175,7 +185,7 @@ def parse_survey(text: str | None, behaviours: list[dict], questions: list[dict]
         else:
             out["answers"][q["id"]] = value
     reason = obj.get("reason")
-    out.update(ok=True, stance=stance, wellbeing=wellbeing, intent=action,
+    out.update(ok=True, stance=stance, wellbeing=wellbeing, satisfaction=satisfaction, intent=action,
                reason=reason if isinstance(reason, str) else None,
                repaired=repaired)
     return out
@@ -183,7 +193,7 @@ def parse_survey(text: str | None, behaviours: list[dict], questions: list[dict]
 
 def summarise(rows: list[dict], plan: dict | None) -> dict | None:
     """Per-period outcome counts for summary.json: actions by category,
-    wellbeing, and each issue's answers with how many failed. Rows are the
+    wellbeing, satisfaction, and each issue's answers with how many failed. Rows are the
     exported rows (one per agent per day or step)."""
     if not plan:
         return None
@@ -198,6 +208,7 @@ def summarise(rows: list[dict], plan: dict | None) -> dict | None:
             if r["intent"]:
                 actions[r["stakeholder_category"]][r["intent"]] += 1
         wb = [r["wellbeing"] for r in rs if r["wellbeing"] is not None]
+        sat = [r.get("satisfaction") for r in rs if r.get("satisfaction") is not None]
         answers = {}
         for iid, issue in issues.items():
             asked = [r for r in rs if iid in r["answers"] or iid in r["answer_errors"]]
@@ -213,5 +224,7 @@ def summarise(rows: list[dict], plan: dict | None) -> dict | None:
                      "actions_by_category": {c: dict(n) for c, n in actions.items()},
                      "wellbeing_n": len(wb),
                      "wellbeing_mean": round(sum(wb) / len(wb), 2) if wb else None,
+                     "satisfaction_n": len(sat),
+                     "satisfaction_mean": round(sum(sat) / len(sat), 2) if sat else None,
                      "issues": answers})
     return {"plan_version": plan.get("version"), "days": days}

@@ -38,8 +38,8 @@ SHARED_FIELDS = [
     "parse_failed",
 ]
 # After the shared fields: what the policy survey adds (see OASIS's export).
-OUTCOME_FIELDS = ["stakeholder_category", "phase", "wellbeing", "reason",
-                  "answers", "answer_errors"]
+OUTCOME_FIELDS = ["stakeholder_category", "phase", "wellbeing", "satisfaction",
+                  "reason", "answers", "answer_errors"]
 WRITTEN = ("post_online", "post_in_whatsapp_group")
 MODEL_FAILURES = ("llm_error", "no_valid_finish", "parse_failed")
 
@@ -114,6 +114,7 @@ def export_run(run_dir: Path) -> dict:
                                             p.get("stakeholder_category")),
             "phase": rec.get("phase"),
             "wellbeing": rec.get("wellbeing"),
+            "satisfaction": rec.get("satisfaction"),
             "reason": rec.get("reason"),
             "answers": rec.get("answers") or {},
             "answer_errors": rec.get("answer_errors") or {},
