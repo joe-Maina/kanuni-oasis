@@ -1,0 +1,118 @@
+{
+ "_note": "COUNTERFACTUAL, invented for experiment E3: the AI in Education draft as if amended to fund basics, teacher training and cost protection. Identical to the generated events.json for policy sim 9825c02e except (1) one added sentence in policy_published and (2) the added event policy_a1. No figures are given because none are known.",
+ "media_accounts": [
+  {
+   "account_id": "ke_news_desk",
+   "name": "Kenya News Desk",
+   "bio": "General news coverage across Kenya."
+  },
+  {
+   "account_id": "ke_business_desk",
+   "name": "KE Business Desk",
+   "bio": "Business, tax and economy reporting."
+  },
+  {
+   "account_id": "ke_parliament_watch",
+   "name": "Parliament Watch KE",
+   "bio": "Daily reporting on the National Assembly."
+  }
+ ],
+ "events": [
+  {
+   "event_id": "policy_published",
+   "date": "2026-10-21",
+   "type": "policy",
+   "source_account": "ke_news_desk",
+   "text": "[21 October 2026] Policy Framework for the Regulation and Responsible Use of Artificial Intelligence in Education in Kenya, 2026 has been published for public consultation. This policy framework proposes a risk-based approach to regulating artificial intelligence in Kenya's education sector, covering institutions from early childhood to universities. It establishes prohibitions on specific high-risk AI uses, such as unreviewed automated decisions and exploitative systems, while mandating human oversight and data protection measures. The document outlines requirements for procurement, teacher training, and the development of local AI capabilities to ensure equity and digital sovereignty. It also details a phased implementation roadmap and assigns specific responsibilities to government ministries, regulators, and educational institutions. As amended, it also commits ring-fenced annual funding for school electricity, connectivity, classrooms and teacher training, and bars any AI-related fees or levies on learners or parents.",
+   "clauses": []
+  },
+  {
+   "event_id": "policy_i1",
+   "date": "2026-10-22",
+   "type": "policy",
+   "source_account": "ke_business_desk",
+   "text": "[22 October 2026] What the proposed Policy Framework for the Regulation and Responsible Use of Artificial Intelligence in Education in Kenya, 2026 would do (section 6.2): Prohibits AI systems designed to exploit learners, discriminatory treatment, unlawful data collection, and solely automated consequential decisions without human review.",
+   "clauses": []
+  },
+  {
+   "event_id": "policy_i2",
+   "date": "2026-10-22",
+   "type": "policy",
+   "source_account": "ke_parliament_watch",
+   "text": "[22 October 2026] What the proposed Policy Framework for the Regulation and Responsible Use of Artificial Intelligence in Education in Kenya, 2026 would do (section 9.1): Requires all covered institutions to adopt and communicate specific AI-use policies defining permitted, restricted, and prohibited uses for assessments.",
+   "clauses": []
+  },
+  {
+   "event_id": "policy_a1",
+   "date": "2026-10-22",
+   "type": "policy",
+   "source_account": "ke_news_desk",
+   "text": "[22 October 2026] What the amended Policy Framework for the Regulation and Responsible Use of Artificial Intelligence in Education in Kenya, 2026 would do (section 18, amended): Replaces 'subject to budgetary approval' with a ring-fenced line in each year's education budget. Underserved schools get electricity, connectivity, safe classrooms and devices before any AI tool is introduced there. Teacher AI training is free, held in working hours and counts towards promotion. No school may charge learners or parents any fee or levy for AI tools, and the costed implementation plan must be tabled in Parliament before Phase II starts.",
+   "clauses": []
+  },
+  {
+   "event_id": "policy_i3",
+   "date": "2026-10-23",
+   "type": "policy",
+   "source_account": "ke_news_desk",
+   "text": "[23 October 2026] What the proposed Policy Framework for the Regulation and Responsible Use of Artificial Intelligence in Education in Kenya, 2026 would do (section 6.1): Mandates a risk-based classification system for AI applications, requiring higher safeguards for high-risk tools like automated grading and learner profiling.",
+   "clauses": []
+  },
+  {
+   "event_id": "policy_i4",
+   "date": "2026-10-23",
+   "type": "policy",
+   "source_account": "ke_business_desk",
+   "text": "[23 October 2026] What the proposed Policy Framework for the Regulation and Responsible Use of Artificial Intelligence in Education in Kenya, 2026 would do (section 7.2): Requires institutions to conduct education-specific AI impact assessments for high-risk applications before deployment and after material changes.",
+   "clauses": []
+  },
+  {
+   "event_id": "policy_i5",
+   "date": "2026-10-24",
+   "type": "policy",
+   "source_account": "ke_parliament_watch",
+   "text": "[24 October 2026] What the proposed Policy Framework for the Regulation and Responsible Use of Artificial Intelligence in Education in Kenya, 2026 would do (section 8.1): Mandates that teachers review AI-generated material for accuracy and relevance before using it for instruction.",
+   "clauses": []
+  },
+  {
+   "event_id": "policy_i6",
+   "date": "2026-10-24",
+   "type": "policy",
+   "source_account": "ke_news_desk",
+   "text": "[24 October 2026] What the proposed Policy Framework for the Regulation and Responsible Use of Artificial Intelligence in Education in Kenya, 2026 would do (section 11.1): Requires public educational institutions to document specific criteria, including performance testing and privacy safeguards, before procuring high-risk AI systems.",
+   "clauses": []
+  },
+  {
+   "event_id": "policy_i7",
+   "date": "2026-10-25",
+   "type": "policy",
+   "source_account": "ke_business_desk",
+   "text": "[25 October 2026] What the proposed Policy Framework for the Regulation and Responsible Use of Artificial Intelligence in Education in Kenya, 2026 would do (section 15): Requires institutions using high-risk systems to notify affected persons, explain the purpose, and provide channels for complaints and human review.",
+   "clauses": []
+  },
+  {
+   "event_id": "policy_i8",
+   "date": "2026-10-25",
+   "type": "policy",
+   "source_account": "ke_parliament_watch",
+   "text": "[25 October 2026] What the proposed Policy Framework for the Regulation and Responsible Use of Artificial Intelligence in Education in Kenya, 2026 would do (section 12): Mandates the Ministry of Education to establish a national AI capacity-building programme for teachers and educational professionals.",
+   "clauses": []
+  },
+  {
+   "event_id": "policy_i10",
+   "date": "2026-10-26",
+   "type": "policy",
+   "source_account": "ke_business_desk",
+   "text": "[26 October 2026] What the proposed Policy Framework for the Regulation and Responsible Use of Artificial Intelligence in Education in Kenya, 2026 would do (section 6.2): Prohibits institutions from requiring learners to use specific commercial AI services if it exposes personal data or creates unreasonable barriers to education.",
+   "clauses": []
+  },
+  {
+   "event_id": "policy_i9",
+   "date": "2026-10-26",
+   "type": "policy",
+   "source_account": "ke_news_desk",
+   "text": "[26 October 2026] What the proposed Policy Framework for the Regulation and Responsible Use of Artificial Intelligence in Education in Kenya, 2026 would do (section 10.1): Establishes an AI in Education Coordination Committee to coordinate implementation, develop standards, and review emerging risks.",
+   "clauses": []
+  }
+ ]
+}

@@ -1,0 +1,48 @@
+{
+  "run_id": "as2_fb24_passed_published_vllm_seed0",
+  "seed": 0,
+  "condition": "passed_as_published",
+  "scenario": "../../../shared/scenarios/ke_fb24_as_published.json",
+  "bill_name": "Finance Bill 2024",
+  "personas": "../../../shared/personas.json",
+  "profiles": "../../../shared/countries/ke/livelihood_profiles.json",
+  "channels": "../../../shared/countries/ke/channels.json",
+  "model": {
+    "name": "qwen3.5-27b",
+    "url": "http://127.0.0.1:8000/v1",
+    "request_timeout_s": 600,
+    "backend": "vLLM 0.22.1, Qwen/Qwen3.5-27B BF16, continuous batching, 32k context"
+  },
+  "model_cutoff": "after 2024-06 (knows the outcome; not reportable)",
+  "_schedule_note": "Counterfactual: 3 Jun - 28 Jul 2024 (20 steps); taxes incl. bread VAT take effect 1 Jul.",
+  "schedule": [
+    {
+      "from": "2024-06-03",
+      "to": "2024-06-16",
+      "step_days": 7
+    },
+    {
+      "from": "2024-06-17",
+      "to": "2024-06-30",
+      "step_days": 1
+    },
+    {
+      "from": "2024-07-01",
+      "to": "2024-07-28",
+      "step_days": 7
+    }
+  ],
+  "agent_config": {
+    "max_react_turns": 8,
+    "enable_todo_list": false,
+    "disabled_skill_ids": [
+      "built-in@daily-guidance",
+      "daily-guidance"
+    ]
+  },
+  "router": {
+    "max_steps": 4
+  },
+  "max_concurrency": 16,
+  "_agent_config_note": "AS2's built-in daily-guidance skill (hour-by-hour day plans written to files) is disabled: our steps are days or weeks, and it used up the agents' turns."
+}

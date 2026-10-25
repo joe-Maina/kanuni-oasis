@@ -50,5 +50,8 @@
       "src": "Calls were public on social media and in the press; this is information people had, not the outcome."
     }
   ],
-  "_validation_note": "Agents are told only about public calls to protest, never where protests actually happened, so protest geography and size can be checked against real records without leaking them."
+  "_validation_note": "Agents are told only about public calls to protest, never where protests actually happened, so protest geography and size can be checked against real records without leaking them.",
+  "extra_events_files": [
+    "../counterfactual_news_fb24_amended.json"
+  ]
 }

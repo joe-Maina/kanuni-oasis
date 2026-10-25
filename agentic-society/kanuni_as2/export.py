@@ -178,6 +178,9 @@ def export_run(run_dir: Path) -> dict:
                                      for r in recs),
         "model_interview_failures": sum(
             r["interview_status"] in MODEL_FAILURES for r in recs),
+        # Answers that parsed only after stance.py added a missing "}".
+        "interviews_repaired": sum(bool(r.get("interview_repaired"))
+                                   for r in recs),
         "infra_failures": sum(r["action_status"] == "infra_error"
                               or r["interview_status"] == "infra_error"
                               for r in recs),

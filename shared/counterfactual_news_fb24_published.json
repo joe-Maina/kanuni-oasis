@@ -1,0 +1,35 @@
+{
+  "_note": "Counterfactual news for ke_fb24_as_published.json: the bill as first published on 9 May is signed and takes effect. Fictional news account, invented events; for 'what if' runs only, never a backtest.",
+  "layer": "counterfactual_news",
+  "media_accounts": [],
+  "events": [
+    {
+      "event_id": "cf_signed_published",
+      "date": "2024-06-26",
+      "type": "assent",
+      "source_account": "ke_news_desk",
+      "text": "[26 June 2024] The President has signed the Finance Bill 2024 into law in the form first published, including 16% VAT on bread, a 2.5% annual motor vehicle tax, an eco levy, VAT on some financial services and higher excise on mobile money fees. The new measures take effect on 1 July.",
+      "clauses": [
+        "vat_bread",
+        "motor_vehicle_tax",
+        "eco_levy",
+        "vat_financial_services",
+        "excise_mobile_money"
+      ]
+    },
+    {
+      "event_id": "cf_effective_published",
+      "date": "2024-07-01",
+      "type": "effective",
+      "source_account": "ke_business_desk",
+      "text": "[1 July 2024] The Finance Act 2024 takes effect today. A 400g loaf of bread now costs about Sh10 more with 16% VAT, mobile money and bank fees rise, and the eco levy applies to diapers, sanitary pads and packaging.",
+      "clauses": [
+        "vat_bread",
+        "motor_vehicle_tax",
+        "eco_levy",
+        "vat_financial_services",
+        "excise_mobile_money"
+      ]
+    }
+  ]
+}

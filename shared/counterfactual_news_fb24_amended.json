@@ -1,0 +1,29 @@
+{
+  "_note": "Counterfactual news for ke_fb24_passed.json: the bill as amended on 18 Jun is signed and takes effect. Fictional news account, invented events; for 'what if' runs only, never a backtest.",
+  "layer": "counterfactual_news",
+  "media_accounts": [],
+  "events": [
+    {
+      "event_id": "cf_signed_amended",
+      "date": "2024-06-26",
+      "type": "assent",
+      "source_account": "ke_news_desk",
+      "text": "[26 June 2024] The President has signed the Finance Bill 2024, as amended by the Finance Committee, into law. The bread VAT and motor vehicle tax were dropped; higher excise duty on mobile money fees and the eco levy on imported goods remain. The new measures take effect on 1 July.",
+      "clauses": [
+        "excise_mobile_money",
+        "eco_levy"
+      ]
+    },
+    {
+      "event_id": "cf_effective_amended",
+      "date": "2024-07-01",
+      "type": "effective",
+      "source_account": "ke_business_desk",
+      "text": "[1 July 2024] The Finance Act 2024 takes effect today. Mobile money transfer fees rise as excise duty goes from 15% to 20%, and imported diapers, sanitary pads and packaging now carry an eco levy.",
+      "clauses": [
+        "excise_mobile_money",
+        "eco_levy"
+      ]
+    }
+  ]
+}

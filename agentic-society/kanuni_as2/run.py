@@ -31,7 +31,10 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 PROFILE_KEYS = ["name", "age", "gender", "sub_county", "county",
                 "urban_rural", "ethnicity", "role", "livelihood", "income",
-                "education", "trust_in_government", "media_habits"]
+                "education", "trust_in_government", "media_habits",
+                # Layers on personas built by the API from an uploaded
+                # policy; absent from the shared Finance Bill personas.
+                "political_leaning", "civic_role", "baseline", "narrative"]
 
 WORLD_TEXT = (
     "You are an ordinary person living in Kenya. Each day you go about your "
@@ -108,8 +111,9 @@ def classify_exception(e: Exception) -> str:
     cause = e.__cause__
     if cause is not None:
         text += f" | {type(cause).__name__}: {cause}"
-    if "context_overflow" in text:
-        # The shim refused a prompt too long for the context window.
+    if "context_overflow" in text or "maximum context length" in text:
+        # The shim (Ollama) or vLLM refused a prompt too long for the
+        # context window.
         return "context_overflow"
     return "infra_error" if any(m in text for m in INFRA_MARKERS) \
         else "llm_error"
@@ -176,7 +180,7 @@ async def run(cfg: dict) -> Path:
     ws_root = run_dir / "agents"
     for p in personas:
         profile = {"id": p["agent_id"],
-                   **{k: p[k] for k in PROFILE_KEYS if k in p}}
+                   **{k: p[k] for k in PROFILE_KEYS if p.get(k) is not None}}
         profile["media_habits"] = ", ".join(p["media_habits"])
         KanuniPersonAgent.create(ws_root / f"agent_{p['agent_id']:04d}",
                                  profile, cfg.get("agent_config", {}))
@@ -231,7 +235,9 @@ async def run(cfg: dict) -> Path:
                 iv_status = classify_exception(e)
                 iv_error = f"{type(e).__name__}: {e}"[:500]
             rec.update(interview_status=iv_status, interview_raw=raw,
-                       interview_error=iv_error, stance=parsed["stance"],
+                       interview_error=iv_error,
+                       interview_repaired=parsed.get("repaired"),
+                       stance=parsed["stance"],
                        intent=parsed["intent"], reason=parsed["reason"],
                        interview_counts=dict(agent.kanuni_counts),
                        interview_s=round(time.time() - t1, 1))

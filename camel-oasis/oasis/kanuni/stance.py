@@ -2,21 +2,34 @@
 
 The parser does not guess. Anything that is not a JSON object with a valid
 stance and intent counts as a parse failure, so failure rates are comparable
-across models.
+across models. One repair is made: Qwen3.5 often ends the object without its
+closing brace. When the text after the last "{" has no "}" at all, one is
+added; if that parses, the answer counts as ok and is marked "repaired" so
+the runs can count it.
 """
 import json
 import re
 
 INTENTS = ("none", "post", "attend_protest", "contact_mp")
 
-INTERVIEW_PROMPT = (
+# Same question as agentic-society/kanuni_as2/stance.py; only the policy
+# name is a parameter, so stance numbers from both simulators stay
+# comparable.
+INTERVIEW_TEMPLATE = (
     "This is a private survey question, not a post. Based only on what you "
-    "have seen so far, what is your current position on the Finance Bill "
-    "2024, and what, if anything, do you intend to do about it?\n"
+    "have seen so far, what is your current position on the {bill}, and "
+    "what, if anything, do you intend to do about it?\n"
     "Reply with only a JSON object and nothing else, in this form:\n"
-    '{"stance": <integer from -2 (strongly oppose) to 2 (strongly support)>, '
+    '{{"stance": <integer from -2 (strongly oppose) to 2 (strongly support)>, '
     '"intent": "<one of: none, post, attend_protest, contact_mp>", '
-    '"reason": "<one short sentence>"}')
+    '"reason": "<one short sentence>"}}')
+
+
+def interview_prompt(bill: str) -> str:
+    return INTERVIEW_TEMPLATE.format(bill=bill)
+
+
+INTERVIEW_PROMPT = interview_prompt("Finance Bill 2024")
 
 _THINK = re.compile(r"<think>.*?</think>", re.S)
 _FENCE = re.compile(r"```(?:json)?\s*(.*?)```", re.S)
@@ -25,7 +38,7 @@ _FENCE = re.compile(r"```(?:json)?\s*(.*?)```", re.S)
 def parse_interview(text: str | None) -> dict:
     """Return {"ok", "stance", "intent", "reason", "error"}."""
     out = {"ok": False, "stance": None, "intent": None, "reason": None,
-           "error": None}
+           "error": None, "repaired": None}
     if not text:
         out["error"] = "empty response"
         return out
@@ -34,6 +47,10 @@ def parse_interview(text: str | None) -> dict:
     if fence:
         body = fence.group(1).strip()
     start, end = body.find("{"), body.rfind("}")
+    repaired = None
+    if start != -1 and end < start:
+        body, end = body + "}", len(body)
+        repaired = "added closing brace"
     if start == -1 or end <= start:
         out["error"] = "no JSON object"
         return out
@@ -59,5 +76,6 @@ def parse_interview(text: str | None) -> dict:
         return out
     reason = obj.get("reason")
     out.update(ok=True, stance=stance, intent=intent,
-               reason=reason if isinstance(reason, str) else None)
+               reason=reason if isinstance(reason, str) else None,
+               repaired=repaired)
     return out

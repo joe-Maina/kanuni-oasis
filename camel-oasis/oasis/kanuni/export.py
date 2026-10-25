@@ -219,6 +219,9 @@ def export_run(run_dir: Path) -> dict:
         # Failures attributable to the model, excluding network errors.
         "model_action_failures": model_action_fail,
         "model_interview_failures": model_iv_fail,
+        # Answers that parsed only after stance.py added a missing "}".
+        "interviews_repaired": sum(bool(r.get("interview_repaired"))
+                                   for r in recs),
         "infra_failures": sum(r["action_status"] == "infra_error"
                               or r["interview_status"] == "infra_error"
                               for r in recs),

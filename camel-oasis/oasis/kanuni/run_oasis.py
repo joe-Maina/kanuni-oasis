@@ -30,7 +30,7 @@ from camel.models import ModelFactory
 from camel.prompts import TextPrompt
 from camel.types import ModelPlatformType
 
-from kanuni.stance import INTERVIEW_PROMPT, parse_interview
+from kanuni.stance import interview_prompt, parse_interview
 
 REPO = Path(__file__).resolve().parent.parent
 # CAMEL warns on every call once the memory window is full; that is intended.
@@ -49,9 +49,34 @@ PERSONA_TEMPLATE = TextPrompt(
     "{trust_in_government}. You mainly use: {media_habits}.\n\n"
     "# RESPONSE METHOD\n"
     "Please perform actions by tool calling.")
+
+# Personas the API builds from an uploaded policy carry no ethnicity or
+# income string but do carry a political leaning, a civic role and a
+# money baseline, so they get their own self-description.
+POLICY_PERSONA_TEMPLATE = TextPrompt(
+    "# OBJECTIVE\n"
+    "You are a Kenyan user of X (Twitter). Each day you see posts in your "
+    "feed. Choose actions with the provided functions that fit who you are. "
+    "You may write in English, Swahili or Sheng, as you normally would.\n\n"
+    "# SELF-DESCRIPTION\n"
+    "Your name is {name}. You are a {age}-year-old {gender} living in "
+    "{sub_county}, {county} County ({urban_rural} area). Occupation: {role}. "
+    "Education: {education}. Politically you are {political_leaning}; your "
+    "trust in the national government is {trust_in_government}. In public "
+    "life you are: {civic_role}. You mainly use: {media_habits}.\n"
+    "Your money and obligations: {baseline}\n"
+    "About you: {narrative}\n\n"
+    "# RESPONSE METHOD\n"
+    "Please perform actions by tool calling.")
+POLICY_PROFILE_DEFAULTS = {"sub_county": "", "baseline": "not described",
+                           "narrative": "not described"}
 PROFILE_KEYS = ["name", "age", "gender", "sub_county", "county",
                 "urban_rural", "ethnicity", "role", "income", "education",
-                "trust_in_government", "media_habits"]
+                "trust_in_government", "media_habits",
+                # Personas built by the API from an uploaded policy add these
+                # layers; the shared Finance Bill personas have none of them,
+                # so their profiles are unchanged.
+                "political_leaning", "civic_role", "baseline", "narrative"]
 
 
 def make_feed_env(action, max_comments: int):
@@ -121,10 +146,39 @@ def is_infra_error(exc: Exception) -> bool:
 
 def error_status(exc: Exception) -> str:
     """Status for an exception from a model call."""
-    if "context_overflow" in str(exc):
-        # The shim refused a prompt too long for the context window.
+    text = str(exc)
+    if "context_overflow" in text or "maximum context length" in text:
+        # The shim (Ollama) or vLLM refused a prompt too long for the
+        # context window.
         return "context_overflow"
     return "infra_error" if is_infra_error(exc) else "llm_error"
+
+
+async def interview(agent, prompt: str) -> str | None:
+    """OASIS's SocialAgent.perform_interview, with one system message.
+
+    OASIS puts the persona (cut before "# RESPONSE METHOD") in a system
+    message and then appends the agent's memory, which starts with its own
+    system message. Ollama accepted two system messages; vLLM applies
+    Qwen's chat template strictly and rejects a system message that is not
+    first. Here the memory's system message is dropped, everything else is
+    as in OASIS, and the interview is recorded on the platform the same way.
+    Nothing is written to the agent's memory (interview_record is False).
+    """
+    from oasis.social_platform.typing import ActionType
+
+    memory, _ = agent.memory.get_context()
+    messages = [{
+        "role": agent.system_message.role_name,
+        "content": agent.system_message.content.split(
+            "# RESPONSE METHOD")[0],
+    }] + [m for m in memory if m.get("role") != "system"] + [
+        {"role": "user", "content": prompt}]
+    response = await agent._aget_model_response(openai_messages=messages)
+    content = response.output_messages[0].content
+    await agent.env.action.perform_action(
+        {"prompt": prompt, "response": content}, ActionType.INTERVIEW.value)
+    return content
 
 
 def classify_llm_result(result) -> tuple[str, list, str | None]:
@@ -180,14 +234,20 @@ async def run(cfg: dict) -> Path:
     graph = AgentGraph()
     id_map = {}
     for oid, p in enumerate(personas):
-        profile = {k: p[k] for k in PROFILE_KEYS}
+        policy_persona = "political_leaning" in p
+        profile = {k: p[k] for k in PROFILE_KEYS if p.get(k) is not None}
         profile["media_habits"] = ", ".join(p["media_habits"])
+        if policy_persona:
+            profile = {**POLICY_PROFILE_DEFAULTS, **profile}
+            for k in ("political_leaning", "civic_role"):
+                profile[k] = profile[k].replace("_", " ")
         graph.add_agent(SocialAgent(
             agent_id=oid,
             user_info=UserInfo(user_name=p["user_name"], name=p["name"],
                                description=p["role"], profile=profile,
                                recsys_type="twitter"),
-            user_info_template=PERSONA_TEMPLATE, agent_graph=graph,
+            user_info_template=(POLICY_PERSONA_TEMPLATE if policy_persona
+                                else PERSONA_TEMPLATE), agent_graph=graph,
             model=model, available_actions=actions))
         agent = graph.get_agent(oid)
         # Bounded prompts: capped comments per post, and memory limited to
@@ -245,6 +305,7 @@ async def run(cfg: dict) -> Path:
     n_days = (date.fromisoformat(cfg["end_date"]) - start).days + 1
     sem = asyncio.Semaphore(cfg["max_concurrency"])
     agent_days = run_dir / "agent_days.jsonl"
+    prompt = interview_prompt(cfg.get("bill_name", "Finance Bill 2024"))
 
     async def agent_day(oid, agent, day_idx, day):
         async with sem:
@@ -253,8 +314,7 @@ async def run(cfg: dict) -> Path:
             status, calls, error = classify_llm_result(result)
             t1 = time.time()
             try:
-                interview = await agent.perform_interview(INTERVIEW_PROMPT)
-                raw = interview.get("content")
+                raw = await interview(agent, prompt)
                 parsed = parse_interview(raw)
                 iv_status = "ok" if parsed["ok"] else "parse_failed"
                 iv_error = parsed["error"]
@@ -268,7 +328,9 @@ async def run(cfg: dict) -> Path:
             "action_status": status, "tool_calls": calls,
             "action_error": error, "interview_status": iv_status,
             "interview_raw": raw, "interview_ok": parsed["ok"],
-            "interview_error": iv_error, "stance": parsed["stance"],
+            "interview_error": iv_error,
+            "interview_repaired": parsed.get("repaired"),
+            "stance": parsed["stance"],
             "intent": parsed["intent"], "reason": parsed["reason"],
             "action_s": round(t1 - t0, 1),
             "interview_s": round(time.time() - t1, 1)})
